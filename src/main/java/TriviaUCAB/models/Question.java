@@ -77,7 +77,7 @@ public class Question {
                                  "|     | %-60s  | " + " ".repeat(30) + " | " + " ".repeat(18) + " | " + " ".repeat(20) + "|",
                                   row, this.question.substring(0,60), this.answer, this.category, this.creator, this.question.substring(question.length() - 60));
         }
-        return String.format("| %-3d | %-60s | %-30s | %-18s| %-20s   ", row, this.question, this.answer, this.category, this.creator);
+        return String.format("| %-3d | %-60s | %-30s | %-18s| %-20s |", row, this.question, this.answer, this.category, this.creator);
     }
 
 

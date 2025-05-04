@@ -6,29 +6,30 @@ import java.util.ArrayList;
 
 import TriviaUCAB.models.*;
 
-public class Main {
+public class App {
+
     Scanner scanner = new Scanner(System.in);
     ArrayList<Usuario> listaUsuarios = new ArrayList<Usuario>();
     Questions questions = new Questions();
 
     public static void main(String[] args) {
-        for (int i = 0; i < 50; i++) {
 
-            System.out.println("Bienvenido a la trivia UCAB configuration!");
+        System.out.println("Bienvenido a la trivia UCAB configuration!");
 
-        }
-        Main aplicacion = new Main();
+        App aplicacion = new App();
         aplicacion.agregarUsuarios();
         aplicacion.agregarPreguntas(aplicacion.listaUsuarios.getFirst());
-
+        aplicacion.questions.visualQuestions(1);
     }
 
     public void agregarUsuarios() {
         System.out.println("Cuantos  usuario deseas agregar: ");
         int cantidadUsuarios = scanner.nextInt();
+        scanner.nextLine();
         while (cantidadUsuarios > 6 - listaUsuarios.size() || cantidadUsuarios <= 0) {
             System.out.println("Exidiste la cantidad de usuarios, El maximos de usuario es " + (6 - listaUsuarios.size()));
             cantidadUsuarios = scanner.nextInt();
+            scanner.nextLine();
         }
         for (int i = 0; i < cantidadUsuarios; i++) {
             Usuario usuarioNuevo = new Usuario(pedirNombre(), pedirPassword());
@@ -39,31 +40,34 @@ public class Main {
     public void agregarPreguntas(Usuario usuario) {
         System.out.println("Cuantas preguntas deseas agregar: ");
         int cantidadPreguntas = scanner.nextInt();
+        scanner.nextLine();
+
         String question;
         String answer;
-        Category categoriaactual;
+        Category categoriaActual;
+        int cont = 1;
         for (int i = 0; i < cantidadPreguntas; i++) {
-            scanner.nextLine();
-            System.out.println("Ingrese el nombre del pregunta: ");
+            cont = 1;
+            System.out.println("Ingrese el nombre de la pregunta: ");
             question = scanner.nextLine();
             System.out.println("Ingrese la respuesta de la pregunta: ");
             answer = scanner.nextLine();
             System.out.println("Ingrese la categoria de la pregunta: ");
-            for(Category category: Category.values()){
-                System.out.println(category);
+            for (Category category : Category.values()) {
+                System.out.println(cont + ") " + category);
+                cont++;
             }
-            int num=scanner.nextInt();
-            categoriaactual=Category.values()[num];
-            questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaactual));
+            int num = scanner.nextInt();
+            scanner.nextLine();
+            categoriaActual = Category.values()[num - 1];
+            questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaActual));
         }
     }
 
     public String pedirNombre() {
-        System.out.println("Presione enter para continuar");
-        scanner.nextLine();
         System.out.println("Ingrese su usuario");
         String usuario = scanner.nextLine();
-        while (Validator.validorCorreo(usuario)) {      //no toma el "@" corregir
+        while (!Validator.validorCorreo(usuario)) {      //no toma el "@" corregir
             System.out.println("El usuario que ingreso no es valido, por favor ingrese un correo valido");
             usuario = scanner.nextLine();
         }
@@ -72,8 +76,6 @@ public class Main {
     }
 
     public String verifyPassword() {
-        System.out.println("Presione enter para continuar");
-        scanner.nextLine();
         System.out.println("Ingrese su password");
         String password = scanner.nextLine();
         while (password.length() != 6) {
