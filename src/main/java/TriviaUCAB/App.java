@@ -3,30 +3,32 @@ package TriviaUCAB;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import TriviaUCAB.models.*;
 
 public class App {
 
     Scanner scanner = new Scanner(System.in);
-    ArrayList<Usuario> listaUsuarios = new ArrayList<Usuario>();
+    ArrayList<Usuario> listaUsuarios = new ArrayList<>();
     Questions questions = new Questions();
+    Usuario usuarioActual;
 
     public static void main(String[] args) {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
-
+        int opcion = 1;
         App aplicacion = new App();
-        aplicacion.agregarUsuarios();
-        aplicacion.agregarPreguntas(aplicacion.listaUsuarios.getFirst());
-        aplicacion.questions.visualQuestions(1);
+        while (opcion != 0) {
+            opcion = aplicacion.menuprincipal();
+        }
     }
 
     public void agregarUsuarios() {
-        System.out.println("Cuantos  usuario deseas agregar: ");
+        System.out.println("Cuantos  usuario deseas registrar: ");
         int cantidadUsuarios = scanner.nextInt();
         scanner.nextLine();
-        while (cantidadUsuarios > 6 - listaUsuarios.size() || cantidadUsuarios <= 0) {
+        while (cantidadUsuarios > 9999 - listaUsuarios.size() || cantidadUsuarios <= 0) {
             System.out.println("Exidiste la cantidad de usuarios, El maximos de usuario es " + (6 - listaUsuarios.size()));
             cantidadUsuarios = scanner.nextInt();
             scanner.nextLine();
@@ -99,5 +101,68 @@ public class App {
         return password;
     }
 
+    public int joinSesion() {
+        int opcion = 0;
+        System.out.println("Inciar sesión");
+        String searchName = pedirNombre();
+        ArrayList<Usuario> usuariosFiltrados = this.listaUsuarios.stream()
+                .filter(usuario -> searchName.equals(usuario.getUserName()))
+                .collect(Collectors.toCollection(ArrayList<Usuario>::new));
+        if (!usuariosFiltrados.isEmpty()) {
+            String password = this.pedirPassword();
+            for (Usuario usuario : usuariosFiltrados) {
+                if (usuario.getPassword().equals(Validator.calcularSha256(password))) {
+                    this.usuarioActual = usuario;
+                    opcion = 0;
+                } else {
+                    System.out.println("La contraseña ingresada no es correcta");
+                    System.out.println("1) Desea iniciar sesion\n0) Salir");
+                    opcion = scanner.nextInt();
+                }
+            }
+        } else {
+            System.out.println("La contraseña ingresada no es correcta");
+            System.out.println("1) Desea iniciar sesion\n0) Salir");
+            opcion = scanner.nextInt();
+        }
+        return opcion;
+    }
 
+    public int menuprincipal() {
+        System.out.println("Desea iniciar sesion o registrar un usuario?\n1) Iniciar Sesión.\n2) Registrar Usuario.\n0) Salir");
+        int opcion = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (opcion) {
+            case 1:
+                System.out.println("Ingrese su usuario");
+                usuarioActual = new Usuario(pedirNombre(), pedirPassword());
+                listaUsuarios.add(usuarioActual);
+                break;
+            case 2:
+                do {
+                    opcion = joinSesion();
+                } while (0 != opcion);
+                break;
+
+            case 0:
+                System.out.println("Hasta la próxima");
+                return opcion;
+
+            default:
+                System.out.println("Opcion no valida");
+                break;
+
+        }
+        do {
+        opcion  =menuDePreguntas();
+        } while (0 != opcion);
+        return opcion;
+    }
+
+    public int menuDePreguntas() {
+        int opcion=0;
+        //crear el nuevo menu
+        return opcion;
+    }
 }

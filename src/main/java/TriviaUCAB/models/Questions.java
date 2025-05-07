@@ -1,15 +1,44 @@
 package TriviaUCAB.models;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Questions {
     public ArrayList<Question> waitApproved = new ArrayList<>();
     private ArrayList<Question> approved= new ArrayList<>();      //todo va guardado en archivos json
     private ArrayList<Question> negativeApproved=new ArrayList<>();
 
+    //agregar preguntas
     public void addWaitApproved(Question question) {
         waitApproved.add(question);
+    }
+
+
+    //modificar preguntas
+    public void modifyQuestion(int position, String question) {
+        waitApproved.get(position).setQuestion(question);
+    }
+
+    public void modifyAnswer(int position, String answer) {
+        waitApproved.get(position).setAnswer(answer);
+
+    }
+
+    public void modifyCategory(int position, Category category) {
+        waitApproved.get(position).setCategory(category);
+
+    }
+
+
+    //eliminar preguntas
+    public void addnegativeApproved(int position) {
+        negativeApproved.add(waitApproved.get(position));
+        waitApproved.remove(position);
+    }
+
+    //aprobar preguntas
+    public void addApproved(int position) {
+        approved.add(waitApproved.get(position));
+        waitApproved.remove(position);
     }
 
     public void visualQuestions(int numberList) {  //pasando al lista

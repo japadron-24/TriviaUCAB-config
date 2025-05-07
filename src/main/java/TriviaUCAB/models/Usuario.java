@@ -1,5 +1,4 @@
 package TriviaUCAB.models;
-import java.util.Scanner;
 
 public class Usuario {
 
@@ -8,16 +7,27 @@ public class Usuario {
 
     public Usuario(String userName, String password) {
         this.userName = userName;
-        this.password = password;
+        this.password = Validator.calcularSha256(password);
+    }
 
+
+    /**
+     * @return password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     public void setUserName(String userName) {
-        this.userName=userName;
+        this.userName = userName;
     }
 
     public void setPassword(String password) {
-        this.password=Validator.calcularSha256(password);
+        this.password = Validator.calcularSha256(password);
     }
 
 

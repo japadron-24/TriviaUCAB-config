@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 //import java.util.regex.Pattern;
 import java.util.regex.*;
 
+import java.util.ArrayList;
+
 import com.google.gson.Gson;
 
 public class Validator {
@@ -59,6 +61,11 @@ public class Validator {
         Pattern patronDelCorreo = Pattern.compile(regex);
         Matcher matcher = patronDelCorreo.matcher(correo);
         return matcher.matches();
+    }
+
+
+    public static int realPosition(int position) {
+        return position-1;
     }
 
 
