@@ -84,9 +84,11 @@ public class Main {
         return password;
     }
 
+    //
     public String pedirPassword() {
         String password = verifyPassword();
         String repeatPassword;
+
         System.out.println("Repita la clave con su password");
         repeatPassword = scanner.nextLine();
         while (!Objects.equals(repeatPassword, password)) {
