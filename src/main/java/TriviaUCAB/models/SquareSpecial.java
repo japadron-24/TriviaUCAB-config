@@ -1,8 +1,8 @@
 package TriviaUCAB.models;
 
 public class SquareSpecial extends Square {
-    SquareCategory next;
-    SquareCategory previous;
+    protected SquareCategory next;
+    protected SquareCategory previous;
 
     public SquareSpecial(SquareCategory next, SquareCategory previous) {
         this.next = next;

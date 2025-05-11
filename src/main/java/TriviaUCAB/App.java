@@ -19,6 +19,7 @@ public class App {
         System.out.println("Bienvenido a la trivia UCAB configuration!");
         int opcion = 1;
         App aplicacion = new App();
+        TableTop tablero = new TableTop();
         while (opcion != 0) {
             opcion = aplicacion.menuprincipal();
         }
@@ -129,7 +130,7 @@ public class App {
     }
 
     public int menuprincipal() {
-        System.out.println("Desea iniciar sesion o registrar un usuario?\n1) Iniciar Sesión.\n2) Registrar Usuario.\n0) Salir");
+        System.out.println("Desea iniciar sesion o registrar un usuario?\n1) Registrar Usuario.\n2) Iniciar Sesión.\n0) Salir");
         int opcion = scanner.nextInt();
         scanner.nextLine();
 

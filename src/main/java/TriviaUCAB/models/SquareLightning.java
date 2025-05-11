@@ -1,10 +1,10 @@
 package TriviaUCAB.models;
 
 public class SquareLightning extends Square {
-    Category categoria;
-    SquareCategory next;
-    SquareCategory previous;
-    SquareCategory toCenter;
+    protected Category categoria;
+    protected SquareCategory next;
+    protected SquareCategory previous;
+    protected SquareCategory toCenter;
 
 
     @Override

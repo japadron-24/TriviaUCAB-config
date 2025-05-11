@@ -1,9 +1,9 @@
 package TriviaUCAB.models;
 
 public class SquareCategory extends Square {
-    Category categoria;
-    Square next;
-    Square previous;
+    protected Category categoria;
+    protected Square next;
+    protected Square previous;
 
     @Override
     public void paint() {
