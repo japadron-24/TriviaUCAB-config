@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class Questions {
     public ArrayList<Question> waitApproved = new ArrayList<>();
-    private ArrayList<Question> approved= new ArrayList<>();      //todo va guardado en archivos json
-    private ArrayList<Question> negativeApproved=new ArrayList<>();
+    private ArrayList<Question> approved = new ArrayList<>();      //todo va guardado en archivos json
+    private ArrayList<Question> negativeApproved = new ArrayList<>();
 
     //agregar preguntas
     public void addWaitApproved(Question question) {
@@ -30,10 +30,28 @@ public class Questions {
 
 
     //eliminar preguntas
-    public void addnegativeApproved(int position) {
+    public void addRejeter(int position) {
         negativeApproved.add(waitApproved.get(position));
         waitApproved.remove(position);
+
     }
+
+    //eliminar pregunta de cualquier lista
+    public void delete(int position, int lista) {
+        switch (lista) {
+            case 1:
+                waitApproved.remove(position);
+                break;
+            case 2:
+                this.approved.remove(position);
+                break;
+            case 3:
+                this.negativeApproved.remove(position);
+                break;
+        }
+
+    }
+
 
     //aprobar preguntas
     public void addApproved(int position) {

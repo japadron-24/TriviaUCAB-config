@@ -3,22 +3,30 @@ package TriviaUCAB.models;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
-import java.util.regex.*;
-
-import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 
 public class Validator {
 
-    static public int validarNumero(String input) {
-        try {
-            return Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Input is not a valid number: " + input);
-        }
+    static public int validarInt(String pregunta, Scanner entrada) {
+        boolean entradaValida;
+        int opcion = -1;
+        do {
+            System.out.println(pregunta);
+            if (entrada.hasNextInt()) {
+                opcion = entrada.nextInt();
+                entrada.nextLine(); // Limpiar buffer
+                entradaValida = true;
+            } else {
+                System.out.println("Entrada no válida. Por favor, introduce un número entero.");
+                entrada.nextLine(); // Descartar la entrada incorrecta
+                entradaValida = false;
+            }
+        } while (!entradaValida);
+        return opcion;
     }
 
     // Método para convertir un objeto a JSON
@@ -65,10 +73,8 @@ public class Validator {
 
 
     public static int realPosition(int position) {
-        return position-1;
+        return position - 1;
     }
-
-
 
 
 }
