@@ -1,11 +1,17 @@
 package TriviaUCAB;
 
+import com.google.gson.Gson;
+
+import java.io.*;
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import TriviaUCAB.models.*;
+import com.google.gson.reflect.TypeToken;
+import com.sun.source.tree.TryTree;
 
 public class App {
 
@@ -13,19 +19,25 @@ public class App {
     ArrayList<Usuario> listaUsuarios = new ArrayList<>();
     Questions questions = new Questions();
     Usuario usuarioActual;
-    ModifyTime tiempo = new ModifyTime(60);
+    String homeFolder = System.getProperty("user.home");
 
     public static void main(String[] args) {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
         int opcion = 1;
         App aplicacion = new App();
-        while (opcion != 0) {
-            opcion = aplicacion.menuprincipal();
-        }
+        aplicacion.loadJson();
+        aplicacion.loadUsuariosJson();
         do {
-            opcion = aplicacion.menuDePreguntas();
-        }while (opcion != 0);
+            opcion = aplicacion.menuprincipal();
+        } while (opcion != 0);
+        aplicacion.saveJson();
+        try {
+            aplicacion.saveUsersJson();
+        } catch (
+                IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void agregarUsuarios() {
@@ -115,12 +127,13 @@ public class App {
                 } else {
                     System.out.println("La contraseña ingresada no es correcta");
                     opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
+                    if (opcion == 0) return -1;
                 }
             }
         } else {
             System.out.println("El usuario no se encuentra registrado");
             opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
-            if (opcion==0) return -1;
+            if (opcion == 0) return -1;
         }
         return opcion;
     }
@@ -133,11 +146,14 @@ public class App {
                 System.out.println("Ingrese su usuario");
                 usuarioActual = new Usuario(pedirNombre(), pedirPassword());
                 listaUsuarios.add(usuarioActual);
+                opcion = this.menuDePreguntas();
+
                 break;
             case 2:
                 do {
                     opcion = joinSesion();
                 } while ((0 != opcion) && (opcion != -1));
+                opcion = this.menuDePreguntas();
                 break;
 
             case 0:
@@ -155,9 +171,14 @@ public class App {
 
     public int questionSelector(int option) {
         int selected = -1;
-        questions.visualQuestions(option);
-        selected = Validator.validarInt("Ingrese el número de la pregunta: ", scanner);
-        return selected-1;
+        do {
+            if (option != 1) questions.visualQuestions(option, usuarioActual);
+            else questions.visualAproved(usuarioActual);
+            selected = Validator.validarInt("Ingrese el número de la pregunta: ", scanner);
+
+        } while (selected > questions.getSize(option) || selected < 1);
+
+        return selected - 1;
     }
 
     public int waitingOrDeleted(int option) {
@@ -182,12 +203,12 @@ public class App {
                     5. Eliminar preguntas
                     6. Modicar tiempo de la pregunta
                     7. Agregar preguntas
-                    0. Salir
+                    0. Cerrar sesion
                     """, scanner);
             switch (opcion) {
                 case 1:
                     System.out.println("Aprobar una pregunta.");
-                    questions.addApproved(questionSelector(1));
+                    questions.addApproved(questionSelector(1), usuarioActual);
                     break;
                 case 2:
                     System.out.println(" Rechazar una pregunta.");
@@ -195,9 +216,16 @@ public class App {
                     break;
                 case 3:
                     System.out.println("Visualizacion de todas las preguntas.");
-                    questions.visualQuestions(1);
-                    questions.visualQuestions(2);
-                    questions.visualQuestions(3);
+
+                    System.out.println("Preguntas en espera");
+                    questions.visualQuestions(1, usuarioActual);
+                    System.out.println("Preguntas aprobadas");
+                    questions.visualQuestions(2, usuarioActual);
+                    System.out.println("Preguntas rechazadas");
+                    questions.visualQuestions(3, usuarioActual);
+
+                    System.out.println("Enter para continuar");
+                    scanner.nextLine();
                     // Aquí podríamos agregar la lógica para agregar las  preguntas del JSON o base de datos
                     break;
                 case 4:
@@ -240,7 +268,7 @@ public class App {
                     questions.delete(questionSelector(listaEliminar), listaEliminar);
                     break;
                 case 6:
-                    tiempo.setTime();
+                    questions.setTime();
                     break;
                 case 7:
                     agregarPreguntas(usuarioActual);
@@ -254,7 +282,109 @@ public class App {
             }
 
         } while (opcion != 0);
-        return opcion;
+        return -1;
     }
 
+    public void saveUsersJson() throws IOException {
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) throw new IOException();
+
+        }
+        Gson gson = new Gson();
+        String json = gson.toJson(this.listaUsuarios);
+        File data = new File(destinyFolder + File.separator + "users.json");
+
+        try (FileWriter writer = new FileWriter(data)) {
+            writer.write(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void saveJson() {
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        Gson gson = new Gson();
+        String json = gson.toJson(questions);
+        File data = new File(destinyFolder + File.separator + "data.json");
+
+        try (FileWriter writer = new FileWriter(data)) {
+            writer.write(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void loadUsuariosJson() {
+        Gson gson = new Gson();
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        var a = new File(destinyFolderFile + File.separator + "users.json");
+        if (!(a.exists())) {
+            try {
+                boolean created = a.createNewFile();
+                if (!created) throw new IOException();
+                this.listaUsuarios = new ArrayList<Usuario>();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (FileReader r = new FileReader(destinyFolderFile + File.separator + "users.json")) {
+                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post en stack overflow
+                BufferedReader bufferedReader = new BufferedReader(r);
+                Type listType = new TypeToken<ArrayList<Usuario>>() {
+                }.getType();
+                listaUsuarios = gson.fromJson(bufferedReader, listType);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo JSON", e);
+            }
+        }
+
+    }
+
+
+    public void loadJson() {
+        Gson gson = new Gson();
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        var a = new File(destinyFolderFile + File.separator + "data.json");
+        if (!(a.exists())) {
+            try {
+                boolean created = a.createNewFile();
+                if (!created) throw new IOException();
+                this.questions = new Questions();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (FileReader reader = new FileReader(destinyFolderFile + File.separator + "data.json")) {
+                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post en stack overflow
+                BufferedReader bufferedReader = new BufferedReader(reader);
+                questions = gson.fromJson(bufferedReader, Questions.class);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo JSON", e);
+            }
+        }
+    }
 }
