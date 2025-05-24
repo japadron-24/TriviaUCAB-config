@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import TriviaUCAB.models.*;
 import com.google.gson.reflect.TypeToken;
-import com.sun.source.tree.TryTree;
 
 public class App {
 
@@ -29,7 +28,7 @@ public class App {
         aplicacion.loadJson();
         aplicacion.loadUsuariosJson();
         do {
-            opcion = aplicacion.menuprincipal();
+            opcion = aplicacion.principalMenu();
         } while (opcion != 0);
         aplicacion.saveJson();
         try {
@@ -40,25 +39,32 @@ public class App {
         }
     }
 
-    public void agregarUsuarios() {
+    public void addUsers() {
         int cantidadUsuarios = Validator.validarInt("Cuantos  usuario deseas registrar: ", scanner);
         while (cantidadUsuarios > 9999 - listaUsuarios.size() || cantidadUsuarios <= 0) {
             cantidadUsuarios = Validator.validarInt("Exidiste la cantidad de usuarios, El maximos de usuario es " + (6 - listaUsuarios.size()), scanner);
         }
         for (int i = 0; i < cantidadUsuarios; i++) {
-            Usuario usuarioNuevo = new Usuario(pedirNombre(), pedirPassword());
+            Usuario usuarioNuevo = new Usuario(askName(), askPassword());
             listaUsuarios.add(usuarioNuevo);
         }
     }
 
-    public void agregarPreguntas(Usuario usuario) {
-        int cantidadPreguntas = Validator.validarInt("Cuantas preguntas deseas agregar: ", scanner);
+    private boolean doContinue() {
+        int option = -1;
+        while (option != 0 && option != 1) {
+            option = Validator.validarInt("Desea continuar 0=No , 1=Si (0/1): ", scanner);
+        }
+        return (option == 1);
+    }
 
+    public void addQuestion(Usuario usuario) {
         String question;
         String answer;
         Category categoriaActual;
         int cont = 1;
-        for (int i = 0; i < cantidadPreguntas; i++) {
+
+        do {
             cont = 1;
             System.out.println("Ingrese el nombre de la pregunta: ");
             question = scanner.nextLine();
@@ -73,10 +79,10 @@ public class App {
 
             categoriaActual = Category.values()[num - 1];
             questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaActual));
-        }
+        } while (doContinue());
     }
 
-    public String pedirNombre() {
+    public String askName() {
         System.out.println("Ingrese su nombre de usuario");
         String usuario = scanner.nextLine();
         while (!Validator.validorCorreo(usuario)) {      //no toma el "@" corregir
@@ -98,7 +104,7 @@ public class App {
         return password;
     }
 
-    public String pedirPassword() {
+    public String askPassword() {
         String password = verifyPassword();
         String repeatPassword;
         System.out.println("Repita la clave con su password");
@@ -114,46 +120,50 @@ public class App {
     public int joinSesion() {
         int opcion = 0;
         System.out.println("Inciar sesión");
-        String searchName = pedirNombre();
+        String searchName = askName();
         ArrayList<Usuario> usuariosFiltrados = this.listaUsuarios.stream()
                 .filter(usuario -> searchName.equals(usuario.getUserName()))
                 .collect(Collectors.toCollection(ArrayList<Usuario>::new));
         if (!usuariosFiltrados.isEmpty()) {
-            String password = this.pedirPassword();
+            String password = this.askPassword();
             for (Usuario usuario : usuariosFiltrados) {
                 if (usuario.getPassword().equals(Validator.calcularSha256(password))) {
                     this.usuarioActual = usuario;
-                    opcion = 0;
+                    opcion = -1;
                 } else {
-                    System.out.println("La contraseña ingresada no es correcta");
-                    opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
-                    if (opcion == 0) return -1;
+                    do {
+                        System.out.println("La contraseña ingresada no es correcta");
+                        opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
+                    } while (opcion !=0 && opcion != 1);
                 }
             }
+
         } else {
-            System.out.println("El usuario no se encuentra registrado");
-            opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
-            if (opcion == 0) return -1;
+            do {
+                System.out.println("El usuario no se encuentra registrado");
+                opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
+            }while(opcion !=0 && opcion != 1);
         }
         return opcion;
     }
 
-    public int menuprincipal() {
+    public int principalMenu() {
         int opcion = Validator.validarInt("Desea iniciar sesion o registrar un usuario?\n1) Registrar Usuario.\n2) Iniciar Sesión.\n0) Salir", scanner);
 
         switch (opcion) {
             case 1:
                 System.out.println("Ingrese su usuario");
-                usuarioActual = new Usuario(pedirNombre(), pedirPassword());
+                usuarioActual = new Usuario(askName(), askPassword());
                 listaUsuarios.add(usuarioActual);
-                opcion = this.menuDePreguntas();
+                opcion = this.questionsMenu();
 
                 break;
             case 2:
                 do {
                     opcion = joinSesion();
-                } while ((0 != opcion) && (opcion != -1));
-                opcion = this.menuDePreguntas();
+                } while (0 != opcion && opcion != -1 && opcion != 1);
+                if (opcion == -1)
+                    opcion = this.questionsMenu();
                 break;
 
             case 0:
@@ -172,11 +182,11 @@ public class App {
     public int questionSelector(int option) {
         int selected = -1;
         do {
-            if (option != 1) questions.visualQuestions(option, usuarioActual);
+            if (option != 4) questions.visualQuestions(option, usuarioActual);
             else questions.visualAproved(usuarioActual);
-            selected = Validator.validarInt("Ingrese el número de la pregunta: ", scanner);
+            selected = Validator.validarInt("Ingrese el número de la pregunta o 0 para salir : ", scanner);
 
-        } while (selected > questions.getSize(option) || selected < 1);
+        } while (selected > questions.getSize(option) || selected < 0);
 
         return selected - 1;
     }
@@ -186,15 +196,15 @@ public class App {
         if (option == 1) {
             selected = questionSelector(option);
         } else if (option == 2) {
-            selected = questionSelector(option);
+            selected = questionSelector(3);
         }
         return selected;
     }
 
-    public int menuDePreguntas() {
-        int opcion = 0;
+    public int questionsMenu() {
+        int option;
         do {
-            opcion = Validator.validarInt("""
+            option = Validator.validarInt("""
                     \\n--- Menú de Preguntas ---
                     1. Aprobar pregunta
                     2. Rechazar pregunta
@@ -205,10 +215,11 @@ public class App {
                     7. Agregar preguntas
                     0. Cerrar sesion
                     """, scanner);
-            switch (opcion) {
+            switch (option) {
                 case 1:
                     System.out.println("Aprobar una pregunta.");
-                    questions.addApproved(questionSelector(1), usuarioActual);
+                    int selected =  questionSelector(4);
+                    questions.addApproved(selected, usuarioActual);
                     break;
                 case 2:
                     System.out.println(" Rechazar una pregunta.");
@@ -229,49 +240,68 @@ public class App {
                     // Aquí podríamos agregar la lógica para agregar las  preguntas del JSON o base de datos
                     break;
                 case 4:
-                    System.out.println("De que lista desea modificar la pregunta.");
-                    int lista = (Validator.validarInt("1) En espera.\n2) Rechazadas", scanner));
-                    int position = waitingOrDeleted(lista);
+                    int listNumber;
+                    do {
+                        System.out.println("De que lista desea modificar la pregunta.");
+                        listNumber = (Validator.validarInt("1) En espera.\n2) Rechazadas", scanner));
+                        if (listNumber > 2 || listNumber < 1)
+                            System.out.println("Ingrese un numero valido del 1 al 2");
+                    } while (listNumber > 2 || listNumber < 1);
+                    int position = waitingOrDeleted(listNumber);
                     System.out.println("Modificar una pregunta.");
-                    int modification = Validator.validarInt("1)Desea modificar las preguntas\n,2)Desea modificar las categorias\n,3)Desea Cambiar las Respuestas", scanner);
-                    String modificar;
-                    switch (modification) {
+                    int modificationNumber = Validator.validarInt("1)Desea modificar las preguntas\n,2)Desea modificar las categorias\n,3)Desea Cambiar las Respuestas", scanner);
+                    String modifyString;
+                    switch (modificationNumber) {
                         case 1:
                             System.out.println("Escriba su modificacion.");
-                            modificar = scanner.nextLine();
-                            questions.modifyQuestion(position, modificar);
+                            modifyString = scanner.nextLine();
+                            questions.modifyQuestion(listNumber,position, modifyString);
                             break;
                         case 2:
-                            int cont = 0;
                             Category categoriaActual;
-                            System.out.println("Ingrese la categoria de la pregunta: ");
-                            for (Category category : Category.values()) {
-                                System.out.println(cont + ") " + category);
-                                cont++;
-                            }
-                            int num = Validator.validarInt("", scanner);
+                            int num = 0;
+                            do {
+                                int cont = 0;
+                                System.out.println("Ingrese la categoria de la pregunta: ");
+                                for (Category category : Category.values()) {
+                                    System.out.println(cont + ") " + category);
+                                    cont++;
+                                }
 
-                            categoriaActual = Category.values()[num - 1];
-                            questions.modifyCategory(position, categoriaActual);
+                                num = Validator.validarInt("", scanner);
+                                if (num > 5 || num < 0) {
+                                    System.out.println("ERROR, Ingrese una opcion validada del 0 al 5");
+                                }
+                            } while (num > 5 || num < 0);
+                            categoriaActual = Category.values()[num];
+                            questions.modifyCategory(listNumber,position, categoriaActual);
                             break;
                         case 3:
                             System.out.println("Escriba su modificacion.");
-                            modificar = scanner.nextLine();
-                            questions.modifyAnswer(position, modificar);
+                            modifyString = scanner.nextLine();
+                            questions.modifyAnswer(listNumber,position, modifyString);
+                            break;
+                        default:
+                            System.out.println("Opcion no valida");
                             break;
                     }
                     break;
 
                 case 5:
-                    System.out.println("De que lista desea eliminar la pregunta.");
-                    int listaEliminar = Validator.validarInt("1) En espera.\n2) Aprovadas.\n3) Rechazadas", scanner);
+                    int listaEliminar = 0;
+                    do {
+                        System.out.println("De que lista desea eliminar la pregunta.");
+                        listaEliminar = Validator.validarInt("1) En espera.\n2) Aprovadas.\n3) Rechazadas", scanner);
+                        if (listaEliminar > 3 || listaEliminar < 1)
+                            System.out.println("ERROR, Ingrese una opcion validada del 0 al 3");
+                    } while (listaEliminar > 3 || listaEliminar < 1);
                     questions.delete(questionSelector(listaEliminar), listaEliminar);
                     break;
                 case 6:
                     questions.setTime();
                     break;
                 case 7:
-                    agregarPreguntas(usuarioActual);
+                    addQuestion(usuarioActual);
                     break;
 
                 case 0:
@@ -281,7 +311,7 @@ public class App {
                     System.out.println("Opción no válida. Intente nuevamente.");
             }
 
-        } while (opcion != 0);
+        } while (option != 0);
         return -1;
     }
 

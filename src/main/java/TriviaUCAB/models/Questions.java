@@ -6,14 +6,14 @@ import java.util.Scanner;
 public class Questions {
     public ArrayList<Question> waitApproved = new ArrayList<>();
     private ArrayList<Question> approved = new ArrayList<>();      //todo va guardado en archivos json
-    private ArrayList<Question> negativeApproved = new ArrayList<>();
+    private ArrayList<Question> rejected = new ArrayList<>();
     private double time;
 
     public void setTime() {
         System.out.println("Ingrese el tiempo limite de las preguntas que no exceda de dos minutos");
         Scanner limitedTime = new Scanner(System.in);
         double time = limitedTime.nextDouble();
-        while(time < 0 || time > 2) {
+        while (time < 0 || time > 2) {
             System.out.print("El tiempo que introdujo se exccede del limite de las preguntas: ");
             time = limitedTime.nextDouble();
         }
@@ -27,24 +27,53 @@ public class Questions {
 
 
     //modificar preguntas
-    public void modifyQuestion(int position, String question) {
-        waitApproved.get(position).setQuestion(question);
+    public void modifyQuestion(int listNumber, int position, String question) {
+        switch (listNumber) {
+            case 1:
+                this.waitApproved.get(position).setQuestion(question);
+                break;
+            case 3:
+                this.approved.get(position).setQuestion(question);
+                break;
+            case 2:
+                this.rejected.get(position).setQuestion(question);
+                break;
+        }
     }
 
-    public void modifyAnswer(int position, String answer) {
-        waitApproved.get(position).setAnswer(answer);
 
+    public void modifyAnswer(int listNumber, int position, String answer) {
+        switch (listNumber) {
+            case 1:
+                waitApproved.get(position).setAnswer(answer);
+                break;
+            case 3:
+                this.approved.get(position).setAnswer(answer);
+                break;
+            case 2:
+                this.rejected.get(position).setAnswer(answer);
+                break;
+        }
     }
 
-    public void modifyCategory(int position, Category category) {
-        waitApproved.get(position).setCategory(category);
-
+    public void modifyCategory(int listNumber, int position, Category category) {
+        switch (listNumber) {
+            case 1:
+                waitApproved.get(position).setCategory(category);
+                break;
+            case 3:
+                this.approved.get(position).setCategory(category);
+                break;
+            case 2:
+                this.rejected.get(position).setCategory(category);
+                break;
+        }
     }
 
 
     //eliminar preguntas
     public void addRejeter(int position) {
-        negativeApproved.add(waitApproved.get(position));
+        rejected.add(waitApproved.get(position));
         waitApproved.remove(position);
 
     }
@@ -59,7 +88,7 @@ public class Questions {
                 this.approved.remove(position);
                 break;
             case 3:
-                this.negativeApproved.remove(position);
+                this.rejected.remove(position);
                 break;
         }
 
@@ -68,7 +97,8 @@ public class Questions {
 
     //aprobar preguntas
     public void addApproved(int position, Usuario currentUser) {
-        if (!currentUser.userName.equals(waitApproved.get(position).getCreator())) {
+        if ( position == -1) System.out.println("Hasta luego vuelva pronto a jugar");
+        else if (!currentUser.userName.equals(waitApproved.get(position).getCreator())) {
             waitApproved.get(position).aprovedBy = currentUser.userName;
             approved.add(waitApproved.get(position));
             waitApproved.remove(position);
@@ -79,7 +109,7 @@ public class Questions {
         return switch (lista) {
             case 1 -> waitApproved.size();
             case 2 -> approved.size();
-            case 3 -> negativeApproved.size();
+            case 3 -> rejected.size();
             default -> 0;
         };
     }
@@ -90,7 +120,7 @@ public class Questions {
         System.out.println("| #   | Pregunta                                                     | Respuesta                      | Categoria         |    Creador           |");
         System.out.println("+-----+--------------------------------------------------------------+--------------------------------+-------------------+----------------------+");
         for (Question question : this.waitApproved) {
-            if (question.getQuestion().equals(usuarioActual.getUserName()))
+            if (!(question.getCreator().equals(usuarioActual.getUserName())))
                 System.out.println(question.tableFormat(counter));
             counter++;
         }
@@ -101,7 +131,7 @@ public class Questions {
         ArrayList<Question> questions = switch (numberList) {
             case 1 -> waitApproved;
             case 2 -> approved;
-            case 3 -> negativeApproved;
+            case 3 -> rejected;
             default -> waitApproved;
         };
         int counter = 1;
@@ -112,8 +142,8 @@ public class Questions {
             if (numberList != 2) {
                 System.out.println(question.tableFormat(counter));
 
-            } else if ( (currentUser.getUserName().equals(question.aprovedBy) ||
-                        currentUser.getUserName().equals(question.getCreator())))
+            } else if ((currentUser.getUserName().equals(question.aprovedBy) ||
+                    currentUser.getUserName().equals(question.getCreator())))
                 System.out.println(question.tableFormat(counter));
             counter++;
         }
