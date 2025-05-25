@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import TriviaUCAB.models.*;
 import com.google.gson.reflect.TypeToken;
 
+
+
 public class App {
 
     Scanner scanner = new Scanner(System.in);
@@ -19,6 +21,8 @@ public class App {
     Questions questions = new Questions();
     Usuario usuarioActual;
     String homeFolder = System.getProperty("user.home");
+
+
 
     public static void main(String[] args) {
 
@@ -39,6 +43,10 @@ public class App {
         }
     }
 
+    /**
+     *Permite registrar múltiples usuarios nuevos.
+     * Valida que la cantidad sea adecuada y almacena los usuarios en la lista.
+     */
     public void addUsers() {
         int cantidadUsuarios = Validator.validarInt("Cuantos  usuario deseas registrar: ", scanner);
         while (cantidadUsuarios > 9999 - listaUsuarios.size() || cantidadUsuarios <= 0) {
@@ -50,6 +58,10 @@ public class App {
         }
     }
 
+    /**
+     * Pregunta al usuario si desea continuar con la acción actual.
+     * @return true si desea continuar, false en caso contrario.
+     */
     private boolean doContinue() {
         int option = -1;
         while (option != 0 && option != 1) {
@@ -58,6 +70,13 @@ public class App {
         return (option == 1);
     }
 
+
+    /**
+     * Permite al usuario ingresar una nueva pregunta, su respuesta y categoria.
+     * La pregunta queda en espera de aprobación.
+     *
+     * @param usuario Usuario que esta registrando la pregunta.
+     */
     public void addQuestion(Usuario usuario) {
         String question;
         String answer;
@@ -82,6 +101,12 @@ public class App {
         } while (doContinue());
     }
 
+
+    /**
+     * Solicita al usuario ingresar un nombre válido (correo electrónico).
+     *
+     * @return Nombre de usuario ingresado.
+     */
     public String askName() {
         System.out.println("Ingrese su nombre de usuario");
         String usuario = scanner.nextLine();
@@ -93,6 +118,11 @@ public class App {
         return usuario;
     }
 
+    /**
+     * Solicita una contraseña válida de 6 caracteres.
+     *
+     * @return Contraseña ingresada.
+     */
     public String verifyPassword() {
         System.out.println("Ingrese su password");
         String password = scanner.nextLine();
@@ -104,6 +134,11 @@ public class App {
         return password;
     }
 
+    /**
+     * Solicita al usuario que ingrese y repita una contraseña válida.
+     *
+     * @return Contraseña confirmada.
+     */
     public String askPassword() {
         String password = verifyPassword();
         String repeatPassword;
@@ -117,6 +152,11 @@ public class App {
         return password;
     }
 
+    /**
+     * Inicia sesión con validación de usuario y contraseña.
+     *
+     * @return -1 si el inicio de sesión fue exitoso, 1 para reintentar, 0 para salir.
+     */
     public int joinSesion() {
         int opcion = 0;
         System.out.println("Inciar sesión");
@@ -147,6 +187,12 @@ public class App {
         return opcion;
     }
 
+    /**
+     * Muestra el menú principal de la aplicación.
+     * Permite registrar usuarios, iniciar sesión o salir.
+     *
+     * @return opción elegida (0 para salir).
+     */
     public int principalMenu() {
         int opcion = Validator.validarInt("Desea iniciar sesion o registrar un usuario?\n1) Registrar Usuario.\n2) Iniciar Sesión.\n0) Salir", scanner);
 
@@ -179,6 +225,12 @@ public class App {
         return opcion;
     }
 
+    /**
+     * Muestra una lista de preguntas y permite al usuario seleccionar una por índice.
+     *
+     * @param option Tipo de lista (1 = espera, 2 = aprobadas, 3 = rechazadas, 4 = aprobadas con visual diferente).
+     * @return Índice seleccionado por el usuario (ajustado a base 0).
+     */
     public int questionSelector(int option) {
         int selected = -1;
         do {
@@ -191,6 +243,12 @@ public class App {
         return selected - 1;
     }
 
+    /**
+     * Método auxiliar para seleccionar una pregunta en espera o rechazada.
+     *
+     * @param option 1 para preguntas en espera, 2 para rechazadas.
+     * @return Índice seleccionado.
+     */
     public int waitingOrDeleted(int option) {
         int selected = -1;
         if (option == 1) {
@@ -201,6 +259,12 @@ public class App {
         return selected;
     }
 
+    /**
+     * Muestra el menú de preguntas una vez iniciada sesión.
+     * Permite realizar operaciones como agregar, aprobar, modificar o eliminar preguntas.
+     *
+     * @return -1 al cerrar sesión.
+     */
     public int questionsMenu() {
         int option;
         do {
@@ -315,6 +379,11 @@ public class App {
         return -1;
     }
 
+    /**
+     * Guarda la lista de usuarios en un archivo JSON en la carpeta `.config`.
+     *
+     * @throws IOException Si ocurre un error de escritura.
+     */
     public void saveUsersJson() throws IOException {
         String destinyFolder = homeFolder + File.separator + ".config";
         File destinyFolderFile = new File(destinyFolder);
@@ -334,6 +403,9 @@ public class App {
         }
     }
 
+    /**
+     * Guarda las preguntas actuales (objeto Questions) en un archivo JSON.
+     */
     public void saveJson() {
         String destinyFolder = homeFolder + File.separator + ".config";
         File destinyFolderFile = new File(destinyFolder);
@@ -354,6 +426,9 @@ public class App {
         }
     }
 
+    /**
+     * Carga los usuarios desde el archivo JSON. Si no existe, se crea uno nuevo.
+     */
     public void loadUsuariosJson() {
         Gson gson = new Gson();
         String destinyFolder = homeFolder + File.separator + ".config";
@@ -387,7 +462,9 @@ public class App {
 
     }
 
-
+    /**
+     * Carga las preguntas desde el archivo JSON. Si no existe, se crea uno nuevo.
+     */
     public void loadJson() {
         Gson gson = new Gson();
         String destinyFolder = homeFolder + File.separator + ".config";
