@@ -1,6 +1,6 @@
 package TriviaUCAB.models;
 
-public class SquareLightning extends Square {
+public class SquareRayo extends Square {
     protected Category categoria;
     protected SquareCategory next;
     protected SquareCategory previous;
@@ -17,7 +17,7 @@ public class SquareLightning extends Square {
 
     }
 
-    public SquareLightning(Category categoria, SquareCategory next, SquareCategory previous, SquareCategory toCenter) {
+    public SquareRayo(Category categoria, SquareCategory next, SquareCategory previous, SquareCategory toCenter) {
         this.categoria = categoria;
         this.next = next;
         this.previous = previous;
