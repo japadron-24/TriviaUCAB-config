@@ -18,8 +18,10 @@ public class SquareSpecial extends Square {
     }
 
     @Override
-    public void paint() {
-
+    public String paint() {
+        return  "┌────┐\n"+
+                "│    │\n"+
+                "└────┘";
     }
 
     @Override

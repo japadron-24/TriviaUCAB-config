@@ -6,8 +6,10 @@ public class SquareCategory extends Square {
     protected Square previous;
 
     @Override
-    public void paint() {
-
+    public String paint() {
+    return  "┌────┐\n"+
+            "│    │\n"+
+            "└────┘";
     }
 
     @Override

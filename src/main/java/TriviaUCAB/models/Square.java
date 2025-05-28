@@ -2,7 +2,7 @@ package TriviaUCAB.models;
 
 abstract public class Square {
 
-    abstract public void paint();
+    abstract public String paint();
 
     abstract public void action();
 }

@@ -7,8 +7,10 @@ public class SquareCenter extends Square {
 
     //metodos
     @Override
-    public void paint() {
-
+    public String paint() {
+        return  "/────\\\n"+
+                "│    │\n"+
+                "\\────/";
     }
 
     @Override
@@ -31,6 +33,7 @@ public class SquareCenter extends Square {
                 squareActual = (SquareCategory) squareActual.next;
             }
             squareActual.next = new SquareRayo(categorias[x++], null, lastSquare, squareActual);
+            if (lastSquare!=null) lastSquare.next=squareActual.next;
             SquareRayo rayoActual = (SquareRayo) squareActual.next;
             if (6 == x) x = 0;
             squareActual = rayoActual.next = new SquareCategory(categorias[x++], null, rayoActual);
@@ -50,7 +53,14 @@ public class SquareCenter extends Square {
             }
             lastSquare = squareActual;
         }
-
+        var iter = this.rayos[0];
+        for (int i = 1; i < 5; i++) {
+            iter =(SquareCategory) iter.next;
+        }
+        if (iter.next instanceof SquareRayo a) {
+            a.previous = lastSquare;
+            lastSquare.next=a;
+        }
     }
 }
 

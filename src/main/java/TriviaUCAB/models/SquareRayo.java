@@ -8,8 +8,10 @@ public class SquareRayo extends Square {
 
 
     @Override
-    public void paint() {
-
+    public String paint() {
+        return  "┌────┐\n"+
+                "│    │\n"+
+                "└────┘";
     }
 
     @Override
