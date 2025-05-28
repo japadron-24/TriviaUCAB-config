@@ -31,6 +31,7 @@ public class App {
         App aplicacion = new App();
         aplicacion.loadJson();
         aplicacion.loadUsuariosJson();
+        TableTop tablero = new TableTop();
         do {
             opcion = aplicacion.principalMenu();
         } while (opcion != 0);
@@ -100,6 +101,7 @@ public class App {
             questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaActual));
         } while (doContinue());
     }
+
 
 
     /**
