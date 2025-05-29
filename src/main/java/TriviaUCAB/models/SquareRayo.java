@@ -9,9 +9,9 @@ public class SquareRayo extends Square {
 
     @Override
     public String paint() {
-        return  "┌────┐\n"+
-                "│    │\n"+
-                "└────┘";
+        return  "+----+\n"+
+                "| R  |\n"+
+                "+----+";
     }
 
     @Override

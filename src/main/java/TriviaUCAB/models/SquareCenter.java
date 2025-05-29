@@ -8,9 +8,9 @@ public class SquareCenter extends Square {
     //metodos
     @Override
     public String paint() {
-        return  "/────\\\n"+
-                "│    │\n"+
-                "\\────/";
+        return  "/----\\\n"+
+                "|     |\n"+
+                "\\----/";
     }
 
     @Override

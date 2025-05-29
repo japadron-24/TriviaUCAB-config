@@ -22,8 +22,6 @@ public class App {
     Usuario usuarioActual;
     String homeFolder = System.getProperty("user.home");
 
-
-
     public static void main(String[] args) {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
@@ -32,9 +30,10 @@ public class App {
         aplicacion.loadJson();
         aplicacion.loadUsuariosJson();
         TableTop tablero = new TableTop();
-        do {
+        tablero.printBoard();
+        /*do {
             opcion = aplicacion.principalMenu();
-        } while (opcion != 0);
+        } while (opcion != 0);*/
         aplicacion.saveJson();
         try {
             aplicacion.saveUsersJson();
@@ -110,7 +109,7 @@ public class App {
      * @return Nombre de usuario ingresado.
      */
     public String askName() {
-        System.out.println("Ingrese su nombre de usuario");
+        System.out.println("Ingrese su correo");
         String usuario = scanner.nextLine();
         while (!Validator.validorCorreo(usuario)) {      //no toma el "@" corregir
             System.out.println("El usuario que ingreso no es valido, por favor ingrese un correo valido");
@@ -144,11 +143,11 @@ public class App {
     public String askPassword() {
         String password = verifyPassword();
         String repeatPassword;
-        System.out.println("Repita la clave con su password");
+        System.out.println("Ingrese nuevamente la contraseña");
         repeatPassword = scanner.nextLine();
         while (!Objects.equals(repeatPassword, password)) {
             System.out.println("La clave no es identica a la anterior");
-            System.out.println("Por favor ingrese la clave");
+            System.out.println("Por favor ingrese la contraseña");
             repeatPassword = scanner.nextLine();
         }
         return password;
@@ -200,7 +199,6 @@ public class App {
 
         switch (opcion) {
             case 1:
-                System.out.println("Ingrese su usuario");
                 usuarioActual = new Usuario(askName(), askPassword());
                 listaUsuarios.add(usuarioActual);
                 opcion = this.questionsMenu();
@@ -271,7 +269,7 @@ public class App {
         int option;
         do {
             option = Validator.validarInt("""
-                    \\n--- Menú de Preguntas ---
+                    --- Menú de Preguntas ---
                     1. Aprobar pregunta
                     2. Rechazar pregunta
                     3. Ver todas las preguntas

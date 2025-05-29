@@ -7,9 +7,9 @@ public class SquareCategory extends Square {
 
     @Override
     public String paint() {
-    return  "┌────┐\n"+
-            "│    │\n"+
-            "└────┘";
+    return  "+----+\n"+
+            "| C  |\n"+
+            "+----+";
     }
 
     @Override
