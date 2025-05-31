@@ -1,6 +1,8 @@
 package TriviaUCAB.models;
 
-public class SquareRayo extends Square {
+import java.util.Scanner;
+
+public class SquareRayo extends Square implements movimientoBidireccional {
     protected Category categoria;
     protected SquareCategory next;
     protected SquareCategory previous;
@@ -10,18 +12,59 @@ public class SquareRayo extends Square {
     @Override
     public String paint() {
         if (cantidadFichas > 0) {
-            return  "┌────┐\n"+
-                    "│R "+cantidadFichas+" │\n"+
+            return "┌────┐\n" +
+                    "│R " + cantidadFichas + " │\n" +
                     "└────┘";
         }
-        return  "┌────┐\n"+
-                "│ R  │\n"+
+        return "┌────┐\n" +
+                "│ R  │\n" +
                 "└────┘";
     }
 
     @Override
-    public void action() {
+    public int action(Scanner scanner, Ficha jugador) {
+        if (true) {
+            return 2;
+        } else {
 
+            System.out.println("Quisieras ir hacia adelante o hacia atrás?");
+            int exit = Validator.validarInt("1. Adelante\n0.Atras", scanner);
+            if (exit == 1) {
+                return 1;
+            } else if (exit == 0) {
+                return 0;
+            } else {
+                System.out.println("Ingrese una opción válida");
+            }
+        }
+        return 0;
+    }
+    public Square salir(int move, int exit, Ficha jugador) {
+        Square iter = this;
+        for (int i = 0; i < move; i++) {
+            if (exit == 1 && iter instanceof movimientoBidireccional next)
+                iter = next.getNext();
+            else if (exit == 0 && iter instanceof movimientoBidireccional prev)
+                iter = prev.getPrevious();
+            else  if(exit ==2){
+                iter = this.toCenter;
+            }
+        }
+        return iter;
+    }
+    public Square movimiento(int move, int exit, Ficha jugador) {
+        Square iter = this;
+        this.cantidadFichas--;
+        for (int i = 0; i < move; i++) {
+            if (exit == 1 && iter instanceof movimientoBidireccional next)
+                iter = next.getNext();
+            else if (exit == 0 && iter instanceof movimientoBidireccional prev)
+                iter = prev.getPrevious();
+            else  if(exit ==2){
+                iter = this.toCenter;
+            }
+        }
+        return iter;
     }
 
     public SquareRayo(Category categoria, SquareCategory next, SquareCategory previous, SquareCategory toCenter) {
@@ -35,15 +78,15 @@ public class SquareRayo extends Square {
         return categoria;
     }
 
-    public SquareCategory getNext() {
-        return next;
-    }
-
     public SquareCategory getToCenter() {
         return toCenter;
     }
 
-    public SquareCategory getPrevious() {
+    public Square getNext() {
+        return this.next;
+    }
+
+    public Square getPrevious() {
         return previous;
     }
 }

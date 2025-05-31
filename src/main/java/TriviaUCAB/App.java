@@ -19,7 +19,7 @@ public class App {
     Questions questions = new Questions();
     Usuario usuarioActual;
     String homeFolder = System.getProperty("user.home");
-    final int MAX_PLAYERS = 6; // Maximo de jugadores
+    final int MAX_PLAYERS = 6; // Máximo de jugadores
     ArrayList<Ficha> fichasJugadores = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -27,12 +27,7 @@ public class App {
         System.out.println("Bienvenido a la trivia UCAB configuration!");
 
         App aplicacion = new App();
-        aplicacion.loadJson();
-        aplicacion.loadUsuariosJson();
-        // do {
-        // opcion = aplicacion.principalMenu();
-        // } while (opcion != 0);
-        // aplicacion.saveJson();
+
 
         try {
             aplicacion.saveUsersJson();
@@ -42,13 +37,12 @@ public class App {
     }
 
     public App() {
-
         System.out.println("Bienvenidos al menu para iniciar el juego");
-
+        loadJson();
+        loadUsuariosJson();
         int opcion = Validator.validarInt(
-                "Debe escoger una opcion valida:\n" + "1.Iniciar sesión de  usarios Registrados\n" + "0.Salir",
+                "1.Iniciar sesión de  usarios Registrados\n" + "0.Salir",
                 scanner);
-
         if (opcion == 1) {
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 Usuario usuario = joinSesion();
@@ -70,16 +64,7 @@ public class App {
             if (fichasJugadores.isEmpty()) {
                 System.out.println("No se han registrado usuarios. Saliendo del juego.");
             } else {
-                usuarioActual = fichasJugadores.get(0).getUsuario();
-                System.out.println("Bienvenido " + usuarioActual.getUserName());
-                do {
-                    int option = questionsMenu();
-                    if (option == -1) {
-                        System.out.println("Cerrando sesión...");
-                        break;
-                    }
-                } while (true);
-                
+                TableTop partida = new TableTop(fichasJugadores,scanner);
             }
         } else if (opcion == 0) {
             System.out.println("Hasta la proxima");
@@ -91,7 +76,7 @@ public class App {
 
     /**
      * Permite registrar múltiples usuarios nuevos.
-     * Valida que la cantidad sea adecuada y almacena los usuarios en la lista.
+     * Valída que la cantidad sea adecuada y almacena los usuarios en la lista.
      */
     public void addUsers() {
         int cantidadUsuarios = Validator.validarInt("Cuantos  usuario deseas registrar: ", scanner);
@@ -108,7 +93,7 @@ public class App {
 
     /**
      * Pregunta al usuario si desea continuar con la acción actual.
-     * 
+     *
      * @return true si desea continuar, false en caso contrario.
      */
     private boolean doContinue(String message) {
@@ -203,7 +188,7 @@ public class App {
      * Inicia sesión con validación de usuario y contraseña.
      *
      * @return -1 si el inicio de sesión fue exitoso, 1 para reintentar, 0 para
-     *         salir.
+     * salir.
      */
     public Usuario joinSesion() {
         System.out.println("Inciar sesión");

@@ -2,33 +2,32 @@ package TriviaUCAB.models;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class TableTop {
     public ArrayList<Ficha> jugadores = new ArrayList<Ficha>();
-    private SquareCenter centro;
+    private final SquareCenter centro;
     int MAX_PLAYERS = 6;
+    boolean ganador = false;
 
-    public TableTop(ArrayList<Ficha> jugadores) {
-        centro = new SquareCenter(this.jugadores.size());
-        Category[] categorias = Category.values();
-        centro=new SquareCenter(jugadores.size());
-
-    }
-
-    private int tirarDado() {
-        return (int) (Math.random() * 6) + 1; // Genera un número entre 1 y 6
-    }
-
-    public void startGame() {
-        for (int index = 0; index < jugadores.size(); index++) {
-            System.out.println(jugadores);
-            System.out.println("Turno del jugador: " + jugadores.get(0).nickName);
-            int dado = tirarDado();
-            System.out.println("El numero del dado es: " + dado);
-            jugadores.get(0).avanzar(dado);
-            System.out.println("Posición actual:\n " + jugadores.get(0).posicion.paint());
-            this.printBoard();
+    public TableTop(ArrayList<Ficha> jugadores, Scanner scanner) {
+        centro = new SquareCenter(jugadores.size());
+        this.jugadores = jugadores;
+        for (Ficha jugadorActual : this.jugadores) {
+            jugadorActual.posicion = this.centro;
         }
+        int turnoJugador = 0;
+        while (!ganador) {
+            this.turno(turnoJugador++,scanner);
+            if (jugadores.size() == turnoJugador) turnoJugador = 0;
+        }
+    }
+
+    public void turno(int jugadorActual, Scanner scanner) {
+        System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
+        jugadores.get(jugadorActual).avanzar(scanner);
+        System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
+        this.printBoard();
     }
 
     // Definimos el tamaño de cada celda (según la salida de paint())
@@ -64,12 +63,12 @@ public class TableTop {
         // Definimos offsets unitarios para cada dirección de los 6 rayos (hexágono
         // regular, ángulos de 60°)
         double[][] dirOffsets = {
-                { 1, 0 }, // Este
-                { 0.5, 0.75 }, // Noreste
-                { -0.5, 0.75 }, // Noroeste
-                { -1, 0 }, // Oeste
-                { -0.5, -0.75 }, // Suroeste
-                { 0.5, -0.75 } // Sureste
+                {1, 0}, // Este
+                {0.5, 0.75}, // Noreste
+                {-0.5, 0.75}, // Noroeste
+                {-1, 0}, // Oeste
+                {-0.5, -0.75}, // Suroeste
+                {0.5, -0.75} // Sureste
         };
         // Dibuja los brazos
         Square[] extremosSquares = new Square[6];
@@ -147,7 +146,7 @@ public class TableTop {
                     } else if (actual instanceof SquareRayo) {
                         actual = ((SquareRayo) actual).getNext();
                     } else if (actual instanceof SquareSpecial) {
-                        actual = ((SquareSpecial) actual).getNext();
+                        actual = ((SquareSpecial) actual).advance();
                     } else {
                         actual = null;
                     }

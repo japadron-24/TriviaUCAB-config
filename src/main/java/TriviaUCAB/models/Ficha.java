@@ -1,49 +1,61 @@
 package TriviaUCAB.models;
 
+import java.awt.desktop.AboutEvent;
+import java.util.Arrays;
+import java.util.Scanner;
+
 public class Ficha {
-    
+
     String nickName;
     Usuario usuario;
     boolean[] triangulos;
     Square posicion;
     boolean salido;
+
     public Ficha(String nickName, Usuario usuario, Category[] triangulos, Square posicion) {
         this.nickName = nickName;
         this.usuario = usuario;
         this.triangulos = new boolean[triangulos.length];
-        for (int i = 0; i < this.triangulos.length; i++) {
-            this.triangulos[i] = false;
-        }
+        Arrays.fill(this.triangulos, false);
         this.posicion = posicion;
         this.salido = false;
     }
-    
+
     public Usuario getUsuario() {
         return usuario;
     }
 
-    public void avanzar(int move) {
-        if (salido) {
-            for (int i = 0; i < move; i++) {
-                posicion = posicion.getNext();
-            }
-        } else if (posicion instanceof SquareCenter centro) {
-            posicion=centro.salir(move, 0);
+    private int tirarDado() {
+        return (int) (Math.random() * 6) + 1; // Genera un número entre 1 y 6
+    }
+
+    public void avanzar(Scanner scanner) {
+        if (!salido && posicion instanceof brazo saliendo) {
+            if (posicion instanceof SquareCenter)
+                posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this,null);
+            else posicion = saliendo.salir(tirarDado(), 1, this,scanner);
             posicion.cantidadFichas++;
-        } else if (posicion instanceof SquareCategory categoria) {
-            if (categoria.cantidadFichas > 0) {
-                posicion = categoria.getNext();
-                posicion.cantidadFichas++;
-            } else {
-                throw new IllegalStateException("No hay cantidadFichas en la categoría para avanzar");
-            }
+
         } else {
-            throw new IllegalStateException("Posición no válida para avanzar");
-            
+            if (posicion instanceof movimientoBidireccional casilla) {
+                posicion = casilla.movimiento(tirarDado(), this.posicion.action(scanner, this), this);
+            }
+            ;
         }
-        
+
+    }
+
+    public boolean triangulo() {
+        boolean complet= true;
+        for (boolean estado : triangulos) {
+            if (!estado) {
+                return false;
+            }
+        }
+        return complet;
     }
 }
+
 /*
 fa.triangulos[categoriaCarta]=true;
 
