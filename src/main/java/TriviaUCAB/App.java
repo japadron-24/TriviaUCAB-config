@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import TriviaUCAB.models.*;
 import com.google.gson.reflect.TypeToken;
 
-
-
 public class App {
 
     Scanner scanner = new Scanner(System.in);
@@ -21,36 +19,86 @@ public class App {
     Questions questions = new Questions();
     Usuario usuarioActual;
     String homeFolder = System.getProperty("user.home");
+    final int MAX_PLAYERS = 6; // Maximo de jugadores
+    ArrayList<Ficha> fichasJugadores = new ArrayList<>();
 
     public static void main(String[] args) {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
-        int opcion = 1;
+
         App aplicacion = new App();
         aplicacion.loadJson();
         aplicacion.loadUsuariosJson();
-        TableTop tablero = new TableTop();
-        tablero.printBoard();
-        /*do {
-            opcion = aplicacion.principalMenu();
-        } while (opcion != 0);*/
-        aplicacion.saveJson();
+        // do {
+        // opcion = aplicacion.principalMenu();
+        // } while (opcion != 0);
+        // aplicacion.saveJson();
+
         try {
             aplicacion.saveUsersJson();
-        } catch (
-                IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public App() {
+
+        System.out.println("Bienvenidos al menu para iniciar el juego");
+
+        int opcion = Validator.validarInt(
+                "Debe escoger una opcion valida:\n" + "1.Iniciar sesión de  usarios Registrados\n" + "0.Salir",
+                scanner);
+
+        if (opcion == 1) {
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                Usuario usuario = joinSesion();
+                if (usuario != null) {
+                    fichasJugadores.add(new Ficha(usuario.getUserName(), usuario, Category.values(),
+                            null));
+                    System.out.println("Usuario " + usuario.getUserName() + " registrado correctamente.");
+                    if (!doContinue(" agregando otro usuario?")) {
+                        break;
+                    }
+                } else {
+                    System.out.println("Usuario no encontrado o contraseña incorrecta. Intente nuevamente.");
+                    if (!doContinue(" agregando otro usuario?")) {
+                        break;
+                    }
+                    i--; // Decrementa el contador para permitir reintentar
+                }
+            }
+            if (fichasJugadores.isEmpty()) {
+                System.out.println("No se han registrado usuarios. Saliendo del juego.");
+            } else {
+                usuarioActual = fichasJugadores.get(0).getUsuario();
+                System.out.println("Bienvenido " + usuarioActual.getUserName());
+                do {
+                    int option = questionsMenu();
+                    if (option == -1) {
+                        System.out.println("Cerrando sesión...");
+                        break;
+                    }
+                } while (true);
+                
+            }
+        } else if (opcion == 0) {
+            System.out.println("Hasta la proxima");
+        } else {
+            System.out.println("Opcion no valida, por favor ingrese 0 o 1");
+        }
+
+    }
+
     /**
-     *Permite registrar múltiples usuarios nuevos.
+     * Permite registrar múltiples usuarios nuevos.
      * Valida que la cantidad sea adecuada y almacena los usuarios en la lista.
      */
     public void addUsers() {
         int cantidadUsuarios = Validator.validarInt("Cuantos  usuario deseas registrar: ", scanner);
         while (cantidadUsuarios > 9999 - listaUsuarios.size() || cantidadUsuarios <= 0) {
-            cantidadUsuarios = Validator.validarInt("Exidiste la cantidad de usuarios, El maximos de usuario es " + (6 - listaUsuarios.size()), scanner);
+            cantidadUsuarios = Validator.validarInt(
+                    "Exisiste la cantidad de usuarios, El maximos de usuario es " + (6 - listaUsuarios.size()),
+                    scanner);
         }
         for (int i = 0; i < cantidadUsuarios; i++) {
             Usuario usuarioNuevo = new Usuario(askName(), askPassword());
@@ -60,16 +108,16 @@ public class App {
 
     /**
      * Pregunta al usuario si desea continuar con la acción actual.
+     * 
      * @return true si desea continuar, false en caso contrario.
      */
-    private boolean doContinue() {
+    private boolean doContinue(String message) {
         int option = -1;
         while (option != 0 && option != 1) {
-            option = Validator.validarInt("Desea continuar 0=No , 1=Si (0/1): ", scanner);
+            option = Validator.validarInt("Desea continuar" + message + "0=No , 1=Si (0/1): ", scanner);
         }
         return (option == 1);
     }
-
 
     /**
      * Permite al usuario ingresar una nueva pregunta, su respuesta y categoria.
@@ -98,10 +146,8 @@ public class App {
 
             categoriaActual = Category.values()[num - 1];
             questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaActual));
-        } while (doContinue());
+        } while (doContinue(""));
     }
-
-
 
     /**
      * Solicita al usuario ingresar un nombre válido (correo electrónico).
@@ -109,9 +155,9 @@ public class App {
      * @return Nombre de usuario ingresado.
      */
     public String askName() {
-        System.out.println("Ingrese su correo");
+        System.out.println("Ingrese su nombre de usuario");
         String usuario = scanner.nextLine();
-        while (!Validator.validorCorreo(usuario)) {      //no toma el "@" corregir
+        while (!Validator.validorCorreo(usuario)) { // no toma el "@" corregir
             System.out.println("El usuario que ingreso no es valido, por favor ingrese un correo valido");
             usuario = scanner.nextLine();
         }
@@ -143,11 +189,11 @@ public class App {
     public String askPassword() {
         String password = verifyPassword();
         String repeatPassword;
-        System.out.println("Ingrese nuevamente la contraseña");
+        System.out.println("Repita la clave con su password");
         repeatPassword = scanner.nextLine();
         while (!Objects.equals(repeatPassword, password)) {
             System.out.println("La clave no es identica a la anterior");
-            System.out.println("Por favor ingrese la contraseña");
+            System.out.println("Por favor ingrese la clave");
             repeatPassword = scanner.nextLine();
         }
         return password;
@@ -156,10 +202,10 @@ public class App {
     /**
      * Inicia sesión con validación de usuario y contraseña.
      *
-     * @return -1 si el inicio de sesión fue exitoso, 1 para reintentar, 0 para salir.
+     * @return -1 si el inicio de sesión fue exitoso, 1 para reintentar, 0 para
+     *         salir.
      */
-    public int joinSesion() {
-        int opcion = 0;
+    public Usuario joinSesion() {
         System.out.println("Inciar sesión");
         String searchName = askName();
         ArrayList<Usuario> usuariosFiltrados = this.listaUsuarios.stream()
@@ -169,73 +215,35 @@ public class App {
             String password = this.askPassword();
             for (Usuario usuario : usuariosFiltrados) {
                 if (usuario.getPassword().equals(Validator.calcularSha256(password))) {
-                    this.usuarioActual = usuario;
-                    opcion = -1;
+                    return usuario;
                 } else {
-                    do {
-                        System.out.println("La contraseña ingresada no es correcta");
-                        opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
-                    } while (opcion !=0 && opcion != 1);
+                    System.out.println("La contraseña ingresada no es correcta");
+                    return null;
                 }
             }
 
         } else {
-            do {
-                System.out.println("El usuario no se encuentra registrado");
-                opcion = Validator.validarInt("1) Desea iniciar sesion\n0) Salir", scanner);
-            }while(opcion !=0 && opcion != 1);
+            System.out.println("El usuario no se encuentra registrado");
+            return null;
         }
-        return opcion;
+        return null;
     }
 
     /**
-     * Muestra el menú principal de la aplicación.
-     * Permite registrar usuarios, iniciar sesión o salir.
+     * Muestra una lista de preguntas y permite al usuario seleccionar una por
+     * índice.
      *
-     * @return opción elegida (0 para salir).
-     */
-    public int principalMenu() {
-        int opcion = Validator.validarInt("Desea iniciar sesion o registrar un usuario?\n1) Registrar Usuario.\n2) Iniciar Sesión.\n0) Salir", scanner);
-
-        switch (opcion) {
-            case 1:
-                usuarioActual = new Usuario(askName(), askPassword());
-                listaUsuarios.add(usuarioActual);
-                opcion = this.questionsMenu();
-
-                break;
-            case 2:
-                do {
-                    opcion = joinSesion();
-                } while (0 != opcion && opcion != -1 && opcion != 1);
-                if (opcion == -1)
-                    opcion = this.questionsMenu();
-                break;
-
-            case 0:
-                System.out.println("Hasta la próxima");
-                return opcion;
-
-            default:
-                System.out.println("Opcion no valida");
-                break;
-
-        }
-
-        return opcion;
-    }
-
-    /**
-     * Muestra una lista de preguntas y permite al usuario seleccionar una por índice.
-     *
-     * @param option Tipo de lista (1 = espera, 2 = aprobadas, 3 = rechazadas, 4 = aprobadas con visual diferente).
+     * @param option Tipo de lista (1 = espera, 2 = aprobadas, 3 = rechazadas, 4 =
+     *               aprobadas con visual diferente).
      * @return Índice seleccionado por el usuario (ajustado a base 0).
      */
     public int questionSelector(int option) {
         int selected = -1;
         do {
-            if (option != 4) questions.visualQuestions(option, usuarioActual);
-            else questions.visualAproved(usuarioActual);
+            if (option != 4)
+                questions.visualQuestions(option, usuarioActual);
+            else
+                questions.visualAproved(usuarioActual);
             selected = Validator.validarInt("Ingrese el número de la pregunta o 0 para salir : ", scanner);
 
         } while (selected > questions.getSize(option) || selected < 0);
@@ -261,7 +269,8 @@ public class App {
 
     /**
      * Muestra el menú de preguntas una vez iniciada sesión.
-     * Permite realizar operaciones como agregar, aprobar, modificar o eliminar preguntas.
+     * Permite realizar operaciones como agregar, aprobar, modificar o eliminar
+     * preguntas.
      *
      * @return -1 al cerrar sesión.
      */
@@ -269,7 +278,7 @@ public class App {
         int option;
         do {
             option = Validator.validarInt("""
-                    --- Menú de Preguntas ---
+                    \\n--- Menú de Preguntas ---
                     1. Aprobar pregunta
                     2. Rechazar pregunta
                     3. Ver todas las preguntas
@@ -282,7 +291,7 @@ public class App {
             switch (option) {
                 case 1:
                     System.out.println("Aprobar una pregunta.");
-                    int selected =  questionSelector(4);
+                    int selected = questionSelector(4);
                     questions.addApproved(selected, usuarioActual);
                     break;
                 case 2:
@@ -301,7 +310,8 @@ public class App {
 
                     System.out.println("Enter para continuar");
                     scanner.nextLine();
-                    // Aquí podríamos agregar la lógica para agregar las  preguntas del JSON o base de datos
+                    // Aquí podríamos agregar la lógica para agregar las preguntas del JSON o base
+                    // de datos
                     break;
                 case 4:
                     int listNumber;
@@ -313,13 +323,15 @@ public class App {
                     } while (listNumber > 2 || listNumber < 1);
                     int position = waitingOrDeleted(listNumber);
                     System.out.println("Modificar una pregunta.");
-                    int modificationNumber = Validator.validarInt("1)Desea modificar las preguntas\n,2)Desea modificar las categorias\n,3)Desea Cambiar las Respuestas", scanner);
+                    int modificationNumber = Validator.validarInt(
+                            "1)Desea modificar las preguntas\n,2)Desea modificar las categorias\n,3)Desea Cambiar las Respuestas",
+                            scanner);
                     String modifyString;
                     switch (modificationNumber) {
                         case 1:
                             System.out.println("Escriba su modificacion.");
                             modifyString = scanner.nextLine();
-                            questions.modifyQuestion(listNumber,position, modifyString);
+                            questions.modifyQuestion(listNumber, position, modifyString);
                             break;
                         case 2:
                             Category categoriaActual;
@@ -338,12 +350,12 @@ public class App {
                                 }
                             } while (num > 5 || num < 0);
                             categoriaActual = Category.values()[num];
-                            questions.modifyCategory(listNumber,position, categoriaActual);
+                            questions.modifyCategory(listNumber, position, categoriaActual);
                             break;
                         case 3:
                             System.out.println("Escriba su modificacion.");
                             modifyString = scanner.nextLine();
-                            questions.modifyAnswer(listNumber,position, modifyString);
+                            questions.modifyAnswer(listNumber, position, modifyString);
                             break;
                         default:
                             System.out.println("Opcion no valida");
@@ -389,7 +401,8 @@ public class App {
         File destinyFolderFile = new File(destinyFolder);
         if (!destinyFolderFile.exists()) {
             boolean created = destinyFolderFile.mkdir();
-            if (!created) throw new IOException();
+            if (!created)
+                throw new IOException();
 
         }
         Gson gson = new Gson();
@@ -443,14 +456,16 @@ public class App {
         if (!(a.exists())) {
             try {
                 boolean created = a.createNewFile();
-                if (!created) throw new IOException();
+                if (!created)
+                    throw new IOException();
                 this.listaUsuarios = new ArrayList<Usuario>();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
             try (FileReader r = new FileReader(destinyFolderFile + File.separator + "users.json")) {
-                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post en stack overflow
+                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
+                // en stack overflow
                 BufferedReader bufferedReader = new BufferedReader(r);
                 Type listType = new TypeToken<ArrayList<Usuario>>() {
                 }.getType();
@@ -479,14 +494,16 @@ public class App {
         if (!(a.exists())) {
             try {
                 boolean created = a.createNewFile();
-                if (!created) throw new IOException();
+                if (!created)
+                    throw new IOException();
                 this.questions = new Questions();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
             try (FileReader reader = new FileReader(destinyFolderFile + File.separator + "data.json")) {
-                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post en stack overflow
+                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
+                // en stack overflow
                 BufferedReader bufferedReader = new BufferedReader(reader);
                 questions = gson.fromJson(bufferedReader, Questions.class);
             } catch (IOException e) {

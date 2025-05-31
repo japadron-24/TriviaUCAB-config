@@ -9,9 +9,14 @@ public class SquareRayo extends Square {
 
     @Override
     public String paint() {
-        return  "+----+\n"+
-                "| R  |\n"+
-                "+----+";
+        if (cantidadFichas > 0) {
+            return  "┌────┐\n"+
+                    "│R "+cantidadFichas+" │\n"+
+                    "└────┘";
+        }
+        return  "┌────┐\n"+
+                "│ R  │\n"+
+                "└────┘";
     }
 
     @Override

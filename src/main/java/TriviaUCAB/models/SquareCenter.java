@@ -4,13 +4,17 @@ package TriviaUCAB.models;
 public class SquareCenter extends Square {
     //miembros
     protected SquareCategory rayos[] = new SquareCategory[6];
-
     //metodos
     @Override
     public String paint() {
-        return  "/----\\\n"+
-                "|     |\n"+
-                "\\----/";
+        if (cantidadFichas > 0) {
+            return  "/────\\\n"+
+                    "│  "+cantidadFichas+" │\n"+
+                    "\\────/";
+        }
+        return  "/────\\\n"+
+                "│    │\n"+
+                "\\────/";
     }
 
     @Override
@@ -18,8 +22,32 @@ public class SquareCenter extends Square {
 
     }
 
-    public SquareCenter() {
+    public Square salir(int move, int exit) {
+        if (move < 1 || move > 6) {
+            throw new IllegalArgumentException("El movimiento debe estar entre 1 y 6");
+        }
+        SquareCategory rayo = this.rayos[exit];
+        if (this.cantidadFichas > 0) {
+            this.cantidadFichas--;
+            for (int i = 0; i < move; i++) {
+                if (rayo.next instanceof SquareCategory) {
+                    rayo = (SquareCategory) rayo.next;
+                } else if (rayo.next instanceof SquareRayo) {
+                    rayo = ((SquareRayo) rayo.next).next;
+                } else {
+                    throw new IllegalStateException("Movimiento no válido, no se puede avanzar más allá de un rayo");
+                }
+            }
+            return rayo;
+        } else {
+            throw new IllegalStateException("No hay cantidadFichas en el Centro para salir");
+        }
+        
+    }
+
+    public SquareCenter(int jugadores) {
         int x = 0;
+        this.cantidadFichas = jugadores;
         var categorias = Category.values();
         SquareCategory lastSquare = null;
         for (int i = 0; i < this.rayos.length; i++) {
@@ -61,6 +89,12 @@ public class SquareCenter extends Square {
             a.previous = lastSquare;
             lastSquare.next=a;
         }
+    }
+
+    @Override
+    public Square getNext() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getNext'");
     }
 }
 

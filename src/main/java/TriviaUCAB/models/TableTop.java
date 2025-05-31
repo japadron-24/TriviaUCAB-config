@@ -1,24 +1,45 @@
 package TriviaUCAB.models;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TableTop {
-    public Ficha[] jugadores = new Ficha[6];
+    public ArrayList<Ficha> jugadores = new ArrayList<Ficha>();
     private SquareCenter centro;
+    int MAX_PLAYERS = 6;
 
-    public TableTop() {
-        centro = new SquareCenter();
+    public TableTop(ArrayList<Ficha> jugadores) {
+        centro = new SquareCenter(this.jugadores.size());
+        Category[] categorias = Category.values();
+        centro=new SquareCenter(jugadores.size());
+
+    }
+
+    private int tirarDado() {
+        return (int) (Math.random() * 6) + 1; // Genera un número entre 1 y 6
+    }
+
+    public void startGame() {
+        for (int index = 0; index < jugadores.size(); index++) {
+            System.out.println(jugadores);
+            System.out.println("Turno del jugador: " + jugadores.get(0).nickName);
+            int dado = tirarDado();
+            System.out.println("El numero del dado es: " + dado);
+            jugadores.get(0).avanzar(dado);
+            System.out.println("Posición actual:\n " + jugadores.get(0).posicion.paint());
+            this.printBoard();
+        }
     }
 
     // Definimos el tamaño de cada celda (según la salida de paint())
     private static final int CELL_WIDTH = 6;
-    private static final int CELL_HEIGHT = 3;
+    private static final int CELL_HEIGHT = 4;
     // Suponemos una matriz “canvas” lo suficientemente grande para alojar el
     // tablero
     // Aquí elegimos 7 celdas de ancho por 7 celdas de alto (esto depende del layout
     // que definas)
     private static final int GRID_COLS = 11;
-    private static final int GRID_ROWS = 11;
+    private static final int GRID_ROWS = 8;
 
     /**
      * Imprime el tablero en la terminal.
@@ -40,24 +61,24 @@ public class TableTop {
         int centerY = canvasHeight / 2 - CELL_HEIGHT / 2;
         drawCell(canvas, this.centro.paint(), centerX, centerY);
 
-        // Definimos offsets unitarios para cada dirección de los 6 rayos (hexágono plano)
-        int[][] dirOffsets = {
-                { 1, 0 },   // Este
-                { 1, -1 },  // Noreste
-                { 0, -1 },  // Norte
-                { -1, 0 },  // Oeste
-                { -1, 1 },  // Suroeste
-                { 0, 1 }    // Sur
+        // Definimos offsets unitarios para cada dirección de los 6 rayos (hexágono
+        // regular, ángulos de 60°)
+        double[][] dirOffsets = {
+                { 1, 0 }, // Este
+                { 0.5, 0.75 }, // Noreste
+                { -0.5, 0.75 }, // Noroeste
+                { -1, 0 }, // Oeste
+                { -0.5, -0.75 }, // Suroeste
+                { 0.5, -0.75 } // Sureste
         };
-
         // Dibuja los brazos
         Square[] extremosSquares = new Square[6];
-        int[][] extremos = new int[6][2];
+        double[][] extremos = new double[6][2];
         for (int i = 0; i < 6; i++) {
-            int dx = dirOffsets[i][0];
-            int dy = dirOffsets[i][1];
-            int posX = centerX;
-            int posY = centerY;
+            double dx = dirOffsets[i][0];
+            double dy = dirOffsets[i][1];
+            double posX = centerX;
+            double posY = centerY;
             Square actual = centro.rayos[i];
             for (int paso = 1; actual != null && paso <= brazoLen; paso++) {
                 posX += dx * CELL_WIDTH;
@@ -83,35 +104,42 @@ public class TableTop {
         // Dibuja el círculo exterior con celdas usando getNext en cada paso
         for (int i = 0; i < 6; i++) {
             int next = (i + 1) % 6;
-            int x0 = extremos[i][0];
-            int y0 = extremos[i][1];
-            int x1 = extremos[next][0];
-            int y1 = extremos[next][1];
+            double x0 = extremos[i][0];
+            double y0 = extremos[i][1];
+            double x1 = extremos[next][0];
+            double y1 = extremos[next][1];
             // Ajuste para extremos
             if (i == 0) {
                 x1 += CELL_WIDTH; // Mueve hacia la derecha
-            }
-            else if (i == 1) {
-                x0 += CELL_WIDTH+1; // Mueve hacia la derecha
-                y0 -= CELL_HEIGHT; // Mueve hacia arriba
-                y1 -= CELL_HEIGHT; // Mueve hacia arriba
+                x0 += CELL_WIDTH; // Mueve hacia la derecha
+            } else if (i == 1) {
+                y0 += CELL_HEIGHT - 1; // Mueve hacia abajo
+                y1 += CELL_HEIGHT - 1; // Mueve hacia abajo
+                x0 += CELL_WIDTH; // Mueve hacia la derecha
             } else if (i == 2) {
-                y0 -= CELL_HEIGHT; // Mueve hacia arriba
-                y1 -= CELL_HEIGHT; // Mueve hacia arriba
+                x0 -= CELL_WIDTH - 3; // Mueve hacia la izquierda
+                x1 -= CELL_WIDTH; // Mueve hacia la izquierda
+                y0 += CELL_HEIGHT - 1; // Mueve hacia abajo
+                y1 += CELL_HEIGHT - 1; // Mueve hacia abajo
             } else if (i == 3) {
+                x0 -= CELL_WIDTH; // Mueve hacia la izquierda
                 x1 -= CELL_WIDTH; // Mueve hacia la izquierda
             } else if (i == 4) {
                 x0 -= CELL_WIDTH; // Mueve hacia la izquierda
-                y0 += CELL_HEIGHT; // Mueve hacia abajo
-                y1 += CELL_HEIGHT; // Mueve hacia abajo
+                y0 -= CELL_HEIGHT - 1; // Mueve hacia arriba
+                y1 -= CELL_HEIGHT - 1; // Mueve hacia arriba
             } else if (i == 5) {
-                y0 += CELL_HEIGHT; // Mueve hacia abajo
-                y1 += CELL_HEIGHT; // Mueve hacia abajo
+                y0 -= CELL_HEIGHT - 1; // Mueve hacia arriba\
+                y1 -= CELL_HEIGHT - 1; // Mueve hacia arriba
+                x0 += CELL_WIDTH - 2; // Mueve hacia la derecha
+                x1 += CELL_WIDTH; // Mueve hacia la derecha
             }
-            int steps = 6;            Square actual = extremosSquares[i];
+
+            int steps = 6;
+            Square actual = extremosSquares[i];
             for (int s = 1; s <= steps; s++) { // <= para incluir la última casilla
-                int px = x0 + (x1 - x0) * s / steps;
-                int py = y0 + (y1 - y0) * s / steps;
+                double px = x0 + (x1 - x0) * s / steps;
+                double py = y0 + (y1 - y0) * s / steps;
                 // Avanza al siguiente Square en cada paso
                 if (actual != null) {
                     if (actual instanceof SquareCategory) {
@@ -146,13 +174,13 @@ public class TableTop {
     }
 
     // Método auxiliar para dibujar la representación de una casilla en el canvas
-    private static void drawCell(char[][] canvas, String cellAscii, int startX, int startY) {
+    private static void drawCell(char[][] canvas, String cellAscii, double startX, double startY) {
         String[] lines = cellAscii.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            int row = startY + i;
+            int row = (int) startY + i;
             if (row >= 0 && row < canvas.length) {
                 for (int j = 0; j < lines[i].length(); j++) {
-                    int col = startX + j;
+                    int col = (int) startX + j;
                     if (col >= 0 && col < canvas[0].length) {
                         canvas[row][col] = lines[i].charAt(j);
                     }
@@ -186,3 +214,6 @@ public class TableTop {
         }
     }
 }
+
+
+

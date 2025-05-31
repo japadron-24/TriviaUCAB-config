@@ -19,9 +19,14 @@ public class SquareSpecial extends Square {
 
     @Override
     public String paint() {
-        return  "+----+\n"+
-                "| S  |\n"+
-                "+----+";
+        if (cantidadFichas > 0) {
+            return  "┌────┐\n"+
+                    "│S "+cantidadFichas+" │\n"+
+                    "└────┘";
+        }
+        return  "┌────┐\n"+
+                "│ S  │\n"+
+                "└────┘";
     }
 
     @Override
