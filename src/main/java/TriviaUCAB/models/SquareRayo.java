@@ -23,10 +23,9 @@ public class SquareRayo extends Square implements movimientoBidireccional {
 
     @Override
     public int action(Scanner scanner, Ficha jugador) {
-        if (true) {
+        if (jugador.triangulo()) {
             return 2;
         } else {
-
             System.out.println("Quisieras ir hacia adelante o hacia atrás?");
             int exit = Validator.validarInt("1. Adelante\n0.Atras", scanner);
             if (exit == 1) {

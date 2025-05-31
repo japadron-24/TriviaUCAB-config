@@ -26,19 +26,22 @@ public class Ficha {
     }
 
     private int tirarDado() {
-        return (int) (Math.random() * 6) + 1; // Genera un número entre 1 y 6
+        int dado = (int) (Math.random() * 6) + 1; // Genera un número entre 1 y 6
+        System.out.println("Tirando el dado..." + dado);
+        return dado;// Genera un número entre 1 y 6
     }
 
     public void avanzar(Scanner scanner) {
         if (!salido && posicion instanceof brazo saliendo) {
             if (posicion instanceof SquareCenter)
-                posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this,null);
-            else posicion = saliendo.salir(tirarDado(), 1, this,scanner);
+                posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this, null);
+            else posicion = saliendo.salir(tirarDado(), 1, this, scanner);
             posicion.cantidadFichas++;
 
         } else {
             if (posicion instanceof movimientoBidireccional casilla) {
                 posicion = casilla.movimiento(tirarDado(), this.posicion.action(scanner, this), this);
+                posicion.cantidadFichas++;
             }
             ;
         }
@@ -46,7 +49,7 @@ public class Ficha {
     }
 
     public boolean triangulo() {
-        boolean complet= true;
+        boolean complet = true;
         for (boolean estado : triangulos) {
             if (!estado) {
                 return false;

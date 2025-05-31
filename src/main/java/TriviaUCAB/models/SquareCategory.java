@@ -49,6 +49,9 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
                 if (iter instanceof SquareCategory sc)
                 iter = sc.getNext();
         }
+        if (iter instanceof SquareRayo ray) {
+            jugador.salido = true;
+        }
         return iter;
     }
 
