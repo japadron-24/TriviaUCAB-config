@@ -21,6 +21,7 @@ public class App {
     String homeFolder = System.getProperty("user.home");
     final int MAX_PLAYERS = 6; // Máximo de jugadores
     ArrayList<Ficha> fichasJugadores = new ArrayList<>();
+    TableTop partida;
 
     public static void main(String[] args) {
 
@@ -41,37 +42,45 @@ public class App {
         loadJson();
         loadUsuariosJson();
         int opcion = Validator.validarInt(
-                "1.Iniciar sesión de  usarios Registrados\n" + "0.Salir",
+                "1. Iniciar sesión de  usarios Registrados\n2. Cargar partida Anterior\n"+ "0. Salir",
                 scanner);
         if (opcion == 1) {
-            for (int i = 0; i < MAX_PLAYERS; i++) {
-                Usuario usuario = joinSesion();
-                if (usuario != null) {
-                    fichasJugadores.add(new Ficha(usuario.getUserName(), usuario, Category.values(),
-                            null));
-                    System.out.println("Usuario " + usuario.getUserName() + " registrado correctamente.");
-                    if (!doContinue(" agregando otro usuario?")) {
-                        break;
-                    }
-                } else {
-                    System.out.println("Usuario no encontrado o contraseña incorrecta. Intente nuevamente.");
-                    if (!doContinue(" agregando otro usuario?")) {
-                        break;
-                    }
-                    i--; // Decrementa el contador para permitir reintentar
-                }
-            }
+            cargarUsuarios();
             if (fichasJugadores.isEmpty()) {
                 System.out.println("No se han registrado usuarios. Saliendo del juego.");
             } else {
-                TableTop partida = new TableTop(fichasJugadores,scanner);
+                this.partida = new TableTop(fichasJugadores, scanner);
             }
+        }
+        if (opcion == 2) {
+            System.out.println("Cargar partida anterior");
+            loadTableTopJson();
         } else if (opcion == 0) {
             System.out.println("Hasta la proxima");
         } else {
-            System.out.println("Opcion no valida, por favor ingrese 0 o 1");
+            System.out.println("Opcion no valida, por favor ingrese 0,1 o 2");
         }
 
+    }
+
+    public void cargarUsuarios() {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            Usuario usuario = joinSesion();
+            if (usuario != null) {
+                fichasJugadores.add(new Ficha(usuario.getUserName(), usuario, Category.values(),
+                        null));
+                System.out.println("Usuario " + usuario.getUserName() + " registrado correctamente.");
+                if (!doContinue(" agregando otro usuario?")) {
+                    break;
+                }
+            } else {
+                System.out.println("Usuario no encontrado o contraseña incorrecta. Intente nuevamente.");
+                if (!doContinue(" agregando otro usuario?")) {
+                    break;
+                }
+                i--; // Decrementa el contador para permitir reintentar
+            }
+        }
     }
 
     /**
@@ -102,36 +111,6 @@ public class App {
             option = Validator.validarInt("Desea continuar" + message + "0=No , 1=Si (0/1): ", scanner);
         }
         return (option == 1);
-    }
-
-    /**
-     * Permite al usuario ingresar una nueva pregunta, su respuesta y categoria.
-     * La pregunta queda en espera de aprobación.
-     *
-     * @param usuario Usuario que esta registrando la pregunta.
-     */
-    public void addQuestion(Usuario usuario) {
-        String question;
-        String answer;
-        Category categoriaActual;
-        int cont = 1;
-
-        do {
-            cont = 1;
-            System.out.println("Ingrese el nombre de la pregunta: ");
-            question = scanner.nextLine();
-            System.out.println("Ingrese la respuesta de la pregunta: ");
-            answer = scanner.nextLine();
-            System.out.println("Ingrese la categoria de la pregunta: ");
-            for (Category category : Category.values()) {
-                System.out.println(cont + ") " + category);
-                cont++;
-            }
-            int num = Validator.validarInt("", scanner);
-
-            categoriaActual = Category.values()[num - 1];
-            questions.addWaitApproved(new Question(question, answer, usuario.userName, categoriaActual));
-        } while (doContinue(""));
     }
 
     /**
@@ -253,130 +232,6 @@ public class App {
     }
 
     /**
-     * Muestra el menú de preguntas una vez iniciada sesión.
-     * Permite realizar operaciones como agregar, aprobar, modificar o eliminar
-     * preguntas.
-     *
-     * @return -1 al cerrar sesión.
-     */
-    public int questionsMenu() {
-        int option;
-        do {
-            option = Validator.validarInt("""
-                    \\n--- Menú de Preguntas ---
-                    1. Aprobar pregunta
-                    2. Rechazar pregunta
-                    3. Ver todas las preguntas
-                    4. Modificar preguntas
-                    5. Eliminar preguntas
-                    6. Modicar tiempo de la pregunta
-                    7. Agregar preguntas
-                    0. Cerrar sesion
-                    """, scanner);
-            switch (option) {
-                case 1:
-                    System.out.println("Aprobar una pregunta.");
-                    int selected = questionSelector(4);
-                    questions.addApproved(selected, usuarioActual);
-                    break;
-                case 2:
-                    System.out.println(" Rechazar una pregunta.");
-                    questions.addRejeter(questionSelector(1));
-                    break;
-                case 3:
-                    System.out.println("Visualizacion de todas las preguntas.");
-
-                    System.out.println("Preguntas en espera");
-                    questions.visualQuestions(1, usuarioActual);
-                    System.out.println("Preguntas aprobadas");
-                    questions.visualQuestions(2, usuarioActual);
-                    System.out.println("Preguntas rechazadas");
-                    questions.visualQuestions(3, usuarioActual);
-
-                    System.out.println("Enter para continuar");
-                    scanner.nextLine();
-                    // Aquí podríamos agregar la lógica para agregar las preguntas del JSON o base
-                    // de datos
-                    break;
-                case 4:
-                    int listNumber;
-                    do {
-                        System.out.println("De que lista desea modificar la pregunta.");
-                        listNumber = (Validator.validarInt("1) En espera.\n2) Rechazadas", scanner));
-                        if (listNumber > 2 || listNumber < 1)
-                            System.out.println("Ingrese un numero valido del 1 al 2");
-                    } while (listNumber > 2 || listNumber < 1);
-                    int position = waitingOrDeleted(listNumber);
-                    System.out.println("Modificar una pregunta.");
-                    int modificationNumber = Validator.validarInt(
-                            "1)Desea modificar las preguntas\n,2)Desea modificar las categorias\n,3)Desea Cambiar las Respuestas",
-                            scanner);
-                    String modifyString;
-                    switch (modificationNumber) {
-                        case 1:
-                            System.out.println("Escriba su modificacion.");
-                            modifyString = scanner.nextLine();
-                            questions.modifyQuestion(listNumber, position, modifyString);
-                            break;
-                        case 2:
-                            Category categoriaActual;
-                            int num = 0;
-                            do {
-                                int cont = 0;
-                                System.out.println("Ingrese la categoria de la pregunta: ");
-                                for (Category category : Category.values()) {
-                                    System.out.println(cont + ") " + category);
-                                    cont++;
-                                }
-
-                                num = Validator.validarInt("", scanner);
-                                if (num > 5 || num < 0) {
-                                    System.out.println("ERROR, Ingrese una opcion validada del 0 al 5");
-                                }
-                            } while (num > 5 || num < 0);
-                            categoriaActual = Category.values()[num];
-                            questions.modifyCategory(listNumber, position, categoriaActual);
-                            break;
-                        case 3:
-                            System.out.println("Escriba su modificacion.");
-                            modifyString = scanner.nextLine();
-                            questions.modifyAnswer(listNumber, position, modifyString);
-                            break;
-                        default:
-                            System.out.println("Opcion no valida");
-                            break;
-                    }
-                    break;
-
-                case 5:
-                    int listaEliminar = 0;
-                    do {
-                        System.out.println("De que lista desea eliminar la pregunta.");
-                        listaEliminar = Validator.validarInt("1) En espera.\n2) Aprovadas.\n3) Rechazadas", scanner);
-                        if (listaEliminar > 3 || listaEliminar < 1)
-                            System.out.println("ERROR, Ingrese una opcion validada del 0 al 3");
-                    } while (listaEliminar > 3 || listaEliminar < 1);
-                    questions.delete(questionSelector(listaEliminar), listaEliminar);
-                    break;
-                case 6:
-                    questions.setTime();
-                    break;
-                case 7:
-                    addQuestion(usuarioActual);
-                    break;
-
-                case 0:
-                    System.out.println("Saliendo del menú...");
-                    break;
-                default:
-                    System.out.println("Opción no válida. Intente nuevamente.");
-            }
-
-        } while (option != 0);
-        return -1;
-    }
-
-    /**
      * Guarda la lista de usuarios en un archivo JSON en la carpeta `.config`.
      *
      * @throws IOException Si ocurre un error de escritura.
@@ -475,6 +330,7 @@ public class App {
                 throw new RuntimeException();
             }
         }
+
         var a = new File(destinyFolderFile + File.separator + "data.json");
         if (!(a.exists())) {
             try {
@@ -491,6 +347,42 @@ public class App {
                 // en stack overflow
                 BufferedReader bufferedReader = new BufferedReader(reader);
                 questions = gson.fromJson(bufferedReader, Questions.class);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo JSON", e);
+            }
+        }
+    }
+
+    public void loadTableTopJson() {
+        Gson gson = new Gson();
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+
+        var a = new File(destinyFolderFile + File.separator + "partidaAnterior.json");
+        if (!(a.exists())) {
+            try {
+                boolean created = a.createNewFile();
+                if (!created)
+                    throw new IOException();
+                cargarUsuarios();
+                this.partida = new TableTop(this.fichasJugadores, scanner);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (FileReader reader = new FileReader(destinyFolderFile + File.separator + "data.json")) {
+                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
+                // en stack overflow
+                BufferedReader bufferedReader = new BufferedReader(reader);
+                this.partida = gson.fromJson(bufferedReader, TableTop.class);
+                this.partida.startGame();
+
             } catch (IOException e) {
                 throw new RuntimeException("Error al leer el archivo JSON", e);
             }

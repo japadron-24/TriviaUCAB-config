@@ -1,5 +1,10 @@
 package TriviaUCAB.models;
 
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -16,18 +21,47 @@ public class TableTop {
         for (Ficha jugadorActual : this.jugadores) {
             jugadorActual.posicion = this.centro;
         }
+        startGame();
+    }
+    public  void startGame(){
         int turnoJugador = 0;
         while (!ganador) {
             this.turno(turnoJugador++,scanner);
             if (jugadores.size() == turnoJugador) turnoJugador = 0;
         }
     }
+    public void saveJson() {
+        String destinyFolder = System.getProperty("user.home") + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        Gson gson = new Gson();
+        String json = gson.toJson(this);
+        File data = new File(destinyFolder + File.separator + "partidaAnterior.json");
+
+        try (FileWriter writer = new FileWriter(data)) {
+            writer.write(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void turno(int jugadorActual, Scanner scanner) {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
         System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
         jugadores.get(jugadorActual).avanzar(scanner);
         System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
         this.printBoard();
+        System.out.print("Presione enter para continuar...");
+        scanner.nextLine();
+        saveJson();
+
     }
 
     // Definimos el tamaño de cada celda (según la salida de paint())
