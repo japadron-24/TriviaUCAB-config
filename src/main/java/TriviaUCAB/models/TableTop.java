@@ -38,8 +38,7 @@ public class TableTop {
             ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
             if (ganador) {
                 jugadores.get(jugadorActual).usuario.setVictory(jugadores.get(jugadorActual).usuario.getVictory()+1);
-            }
-            jugadorActual++;
+            }jugadorActual++;
             if (jugadorActual == jugadores.size()) jugadorActual = 0;
             System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
 

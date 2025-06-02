@@ -27,7 +27,12 @@ public class App {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
 
-        App aplicacion = new App();
+        App aplicacion = null;
+        try {
+            aplicacion = new App();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
 
         try {

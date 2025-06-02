@@ -68,8 +68,9 @@ public class SquareRayo extends Square implements movimientoBidireccional ,Categ
         return iter;
     }
 
-    public SquareRayo(Category categoria, SquareCategory next, SquareCategory previous, SquareCategory toCenter) {
+    public SquareRayo(Category categoria, SquareCategory next, SquareCategory previous, SquareCategory toCenter,int position) {
         this.categoria = categoria;
+        this.position=position;
         this.next = next;
         this.previous = previous;
         this.toCenter = toCenter;

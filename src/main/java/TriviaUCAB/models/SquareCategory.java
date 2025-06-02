@@ -65,7 +65,8 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
         return iter;
     }
 
-    public SquareCategory(Category categoria, Square next, Square previous) {
+    public SquareCategory(Category categoria, Square next, Square previous,int position) {
+        this.position=position;
         this.categoria = categoria;
         this.next = next;
         this.previous = previous;

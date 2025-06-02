@@ -65,35 +65,38 @@ public class SquareCenter extends Square implements brazo, CategoryQuestion {
     }
 
     public SquareCenter(int jugadores) {
+        int position=0;
+        this.position=position;
+        position++;
         int currentCategory = 0;
         this.cantidadFichas = jugadores;
         var categorias = Category.values();
         SquareCategory lastSquare = null;
         for (int i = 0; i < this.rayos.length; i++) {
-            this.rayos[i] = new SquareCategory(categorias[i], null, this);
+            this.rayos[i] = new SquareCategory(categorias[i], null, this, position++);
             SquareCategory squareActual = this.rayos[i];
             currentCategory = i + 1;
             if (categorias.length == currentCategory) currentCategory = 0;
             for (int j = 1; j < 5; j++) {
-                squareActual.next = new SquareCategory(categorias[currentCategory++], null, squareActual);
+                squareActual.next = new SquareCategory(categorias[currentCategory++], null, squareActual, position++);
                 if (categorias.length == currentCategory) currentCategory = 0;
                 squareActual = (SquareCategory) squareActual.next;
             }
-            squareActual.next = new SquareRayo(categorias[currentCategory++], null, lastSquare, squareActual);
+            squareActual.next = new SquareRayo(categorias[currentCategory++], null, lastSquare, squareActual,position++);
             if (lastSquare != null) lastSquare.next = squareActual.next;
             SquareRayo rayoActual = (SquareRayo) squareActual.next;
             if (categorias.length == currentCategory) currentCategory = 0;
-            squareActual = rayoActual.next = new SquareCategory(categorias[currentCategory++], null, rayoActual);
+            squareActual = rayoActual.next = new SquareCategory(categorias[currentCategory++], null, rayoActual, position++);
             if (categorias.length == currentCategory) currentCategory = 0;
             for (int j = 1; j < 6; j++) {
                 if (j == 1 || j == 4) {
-                    squareActual.next = new SquareSpecial(null, squareActual);
-                    ((SquareSpecial) squareActual.next).next = new SquareCategory(categorias[currentCategory++], null, squareActual.next);
+                    squareActual.next = new SquareSpecial(null, squareActual,position++);
+                    ((SquareSpecial) squareActual.next).next = new SquareCategory(categorias[currentCategory++], null, squareActual.next, position++);
                     j++;
                     if (categorias.length == currentCategory) currentCategory = 0;
                     squareActual = ((SquareSpecial) squareActual.next).next;
                 } else {
-                    squareActual.next = new SquareCategory(categorias[currentCategory++], null, squareActual);
+                    squareActual.next = new SquareCategory(categorias[currentCategory++], null, squareActual, position++);
                     if (categorias.length == currentCategory) currentCategory = 0;
                     squareActual = (SquareCategory) squareActual.next;
                 }

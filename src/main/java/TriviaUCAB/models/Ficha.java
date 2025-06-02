@@ -11,8 +11,9 @@ public class Ficha {
     boolean[] triangulos;
     Square posicion;
     boolean salido;
-    boolean entrado=false;
-    boolean gano=false;
+    boolean entrado = false;
+    boolean gano = false;
+    int positionTable;
 
     public Ficha(String nickName, Usuario usuario, Category[] triangulos, Square posicion) {
         this.nickName = nickName;
@@ -39,25 +40,29 @@ public class Ficha {
                 posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this, null);
             else posicion = saliendo.salir(tirarDado(), 1, this, scanner);
             posicion.cantidadFichas++;
+            this.positionTable = posicion.position;
             if (posicion instanceof CategoryQuestion cQ) {
                 cQ.reaction(scanner, this, questions);
             }
-        }
-        else if(entrado) {
-            if (posicion instanceof  brazo saliendo) {
+        } else if (entrado) {
+            if (posicion instanceof brazo saliendo) {
                 posicion = saliendo.entrar(tirarDado(), 1, this, scanner);
-                if (posicion instanceof SquareCenter sC){
-                    sC.reaction(scanner,this,questions);
+                posicion.cantidadFichas++;
+                this.positionTable = posicion.position;
+                if (posicion instanceof SquareCenter sC) {
+                    sC.reaction(scanner, this, questions);
                     if (this.gano) return true;
                 }
             }
-        }else{
+        } else {
             if (posicion instanceof movimientoBidireccional casilla) {
                 posicion = casilla.movimiento(tirarDado(), this.posicion.action(scanner, this), this);
                 posicion.cantidadFichas++;
+                this.positionTable = posicion.position;
                 if (posicion instanceof SquareSpecial sS) {
                     posicion = sS.reaction(scanner, this);
                     posicion.cantidadFichas++;
+                    this.positionTable = posicion.position;
                 }
                 if (posicion instanceof CategoryQuestion cQ) {
                     cQ.reaction(scanner, this, questions);
@@ -89,7 +94,7 @@ public class Ficha {
     }
 
     public void incrementarPuntos(Category categoria) {
-        int n =categoria.ordinal();
+        int n = categoria.ordinal();
         this.triangulos[n] = true;
     }
 }

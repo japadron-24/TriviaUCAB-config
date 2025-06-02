@@ -23,7 +23,8 @@ public class SquareSpecial extends Square implements movimientoBidireccional {
         }
         return iter;
     }
-    public SquareSpecial(SquareCategory next, SquareCategory previous) {
+    public SquareSpecial(SquareCategory next, SquareCategory previous, int position) {
+        this.position=position;
         this.next = next;
         this.previous = previous;
     }
