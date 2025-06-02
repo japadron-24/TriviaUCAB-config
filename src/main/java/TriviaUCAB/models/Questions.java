@@ -216,7 +216,7 @@ public class Questions {
      * @param category La categoría de la pregunta.
      * @return Una pregunta aleatoria de esa categoría o null si no hay ninguna disponible.
      */
-    // ✅ NUEVO MÉTODO: Obtener una pregunta aleatoria por categoría
+    // NUEVO MÉTODO: Obtener una pregunta aleatoria por categoría
     public Question getRandomQuestion(Category category) {
         ArrayList<Question> filtradas = new ArrayList<>();
         for (Question q : approved) {

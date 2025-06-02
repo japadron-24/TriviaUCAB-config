@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 import TriviaUCAB.models.*;
 import com.google.gson.reflect.TypeToken;
 
+/**
+ * Clase principal de la aplicación Trivia UCAB.
+ * Gestiona la configuración del juego, los usuarios, las preguntas y las partidas.
+ */
 public class App {
 
     Scanner scanner = new Scanner(System.in);
@@ -23,6 +27,12 @@ public class App {
     ArrayList<Ficha> fichasJugadores = new ArrayList<>();
     TableTop partida;
 
+    /**
+     * Método principal que inicia la aplicación.
+     * Permite cargar la configuración, usuarios y manejar el menú principal.
+     *
+     * @param args Argumentos de la línea de comandos.
+     */
     public static void main(String[] args) {
 
         System.out.println("Bienvenido a la trivia UCAB configuration!");
@@ -34,7 +44,6 @@ public class App {
             throw new RuntimeException(e);
         }
 
-
         try {
             aplicacion.saveUsersJson();
         } catch (IOException e) {
@@ -42,6 +51,12 @@ public class App {
         }
     }
 
+    /**
+     * Constructor de la clase. Inicializa la aplicación, carga la configuración,
+     * los usuarios y presenta un menú de opciones al usuario.
+     *
+     * @throws IOException Si ocurre un error al cargar archivos de configuración.
+     */
     public App() throws IOException {
         System.out.println("Bienvenidos al menu para iniciar el juego");
         loadJson();
@@ -66,7 +81,7 @@ public class App {
             }
             if (opcion == 2) {
                 System.out.println("Cargar partida anterior");
-//            loadTableTopJson(); no funciona
+                loadFichaJson();
             } else if (opcion == 0) {
                 System.out.println("Hasta la proxima");
             } else {
@@ -76,6 +91,11 @@ public class App {
 
     }
 
+    /**
+     * Método para cargar los usuarios registrados. Permite a los jugadores iniciar sesión.
+     *
+     * Registra hasta un máximo de 6 jugadores, y crea fichas para cada uno.
+     */
     public void cargarUsuarios() {
         for (int i = 0; i < MAX_PLAYERS; i++) {
             Usuario usuario = joinSesion();
@@ -97,8 +117,9 @@ public class App {
     }
 
     /**
-     * Permite registrar múltiples usuarios nuevos.
-     * Valída que la cantidad sea adecuada y almacena los usuarios en la lista.
+     * Método que permite registrar múltiples usuarios nuevos.
+     *
+     * Valida que la cantidad de usuarios sea adecuada y los almacena en la lista.
      */
     public void addUsers() {
         int cantidadUsuarios = Validator.validarInt("Cuantos  usuario deseas registrar: ", scanner);
@@ -116,6 +137,7 @@ public class App {
     /**
      * Pregunta al usuario si desea continuar con la acción actual.
      *
+     * @param message El mensaje que se mostrará al usuario.
      * @return true si desea continuar, false en caso contrario.
      */
     private boolean doContinue(String message) {
@@ -179,8 +201,7 @@ public class App {
     /**
      * Inicia sesión con validación de usuario y contraseña.
      *
-     * @return -1 si el inicio de sesión fue exitoso, 1 para reintentar, 0 para
-     * salir.
+     * @return El usuario que se ha autenticado correctamente o null si no se encuentra.
      */
     public Usuario joinSesion() {
         System.out.println("Inciar sesión");
@@ -256,7 +277,6 @@ public class App {
             boolean created = destinyFolderFile.mkdir();
             if (!created)
                 throw new IOException();
-
         }
         Gson gson = new Gson();
         String json = gson.toJson(this.listaUsuarios);
@@ -293,6 +313,43 @@ public class App {
     }
 
     /**
+     * Carga la información de las fichas de jugadores desde un archivo JSON.
+     */
+    public void loadFichaJson() {
+        String houseFolder = System.getProperty("ficha.home");
+        Gson gson = new Gson();
+        String destinyFolder = houseFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        var a = new File(destinyFolderFile + File.separator + "fichas.json");
+        if (!(a.exists())) {
+            try {
+                boolean created = a.createNewFile();
+                if (!created)
+                    throw new IOException();
+                this.fichasJugadores = new ArrayList<Ficha>();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (FileReader r = new FileReader(destinyFolderFile + File.separator + "fichas.json")) {
+                BufferedReader bufferedReader = new BufferedReader(r);
+                Type listType = new TypeToken<ArrayList<Ficha>>() {
+                }.getType();
+                fichasJugadores = gson.fromJson(bufferedReader, listType);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo JSON", e);
+            }
+        }
+
+    }
+
+    /**
      * Carga los usuarios desde el archivo JSON. Si no existe, se crea uno nuevo.
      */
     public void loadUsuariosJson() {
@@ -317,8 +374,6 @@ public class App {
             }
         } else {
             try (FileReader r = new FileReader(destinyFolderFile + File.separator + "users.json")) {
-                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
-                // en stack overflow
                 BufferedReader bufferedReader = new BufferedReader(r);
                 Type listType = new TypeToken<ArrayList<Usuario>>() {
                 }.getType();
@@ -356,8 +411,6 @@ public class App {
             }
         } else {
             try (FileReader reader = new FileReader(destinyFolderFile + File.separator + "data.json")) {
-                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
-                // en stack overflow
                 BufferedReader bufferedReader = new BufferedReader(reader);
                 questions = gson.fromJson(bufferedReader, Questions.class);
             } catch (IOException e) {

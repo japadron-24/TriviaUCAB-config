@@ -2,22 +2,55 @@ package TriviaUCAB.models;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.*;
+import java.lang.reflect.Type;
 import java.util.concurrent.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/**
+ * Clase que representa el tablero de un juego de mesa.
+ * Esta clase maneja el inicio del juego, el turno de los jugadores, y la visualización del tablero.
+ */
 public class TableTop {
+    /**
+     * Lista de jugadores que participan en el juego.
+     */
     public ArrayList<Ficha> jugadores = new ArrayList<Ficha>();
+
+    /**
+     * El centro del tablero.
+     */
     private final SquareCenter centro;
+
+    /**
+     * Número máximo de jugadores en el juego.
+     */
     int MAX_PLAYERS = 6;
+
+    /**
+     * Indicador de si el juego ha terminado o no.
+     */
     boolean ganador = false;
 
-    public TableTop(ArrayList<Ficha> jugadores, Scanner scanner, Questions questions) {
+    /**
+     * Carpeta de inicio del sistema donde se guardarán los datos de los jugadores.
+     */
+    String homeFolder = System.getProperty("ficha.home");
+
+    /**
+     * Constructor de la clase TableTop.
+     * Inicializa el tablero y asigna la posición de los jugadores en el centro.
+     *
+     * @param jugadores Lista de jugadores que participan en el juego.
+     * @param scanner Objeto Scanner para capturar entradas del usuario.
+     * @param questions Preguntas que se usarán durante el juego.
+     * @throws IOException Si ocurre un error de entrada/salida al guardar datos.
+     */
+    public TableTop(ArrayList<Ficha> jugadores, Scanner scanner, Questions questions) throws IOException {
         centro = new SquareCenter(jugadores.size());
         this.jugadores = jugadores;
         for (Ficha jugadorActual : this.jugadores) {
@@ -26,61 +59,78 @@ public class TableTop {
         startGame(scanner, questions);
     }
 
-    public void startGame(Scanner scanner, Questions questions) {
+    /**
+     * Guarda el estado actual de las fichas de los jugadores en un archivo JSON.
+     *
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    private void saveFichaJson() throws IOException {
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created)
+                throw new IOException();
+        }
+        Gson gson = new Gson();
+        String json = gson.toJson(this.jugadores);
+        File data = new File(destinyFolder + File.separator + "fichas.json");
+
+        try (FileWriter writer = new FileWriter(data)) {
+            writer.write(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Inicia el juego, realizando los turnos de los jugadores hasta que uno gane.
+     *
+     * @param scanner Objeto Scanner para capturar entradas del usuario.
+     * @param questions Preguntas que se usarán durante el juego.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
+    public void startGame(Scanner scanner, Questions questions) throws IOException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         int jugadorActual = 0;
-
         while (!ganador) {
             System.out.print("\033[H\033[2J");
             System.out.flush();
             this.printBoard();
             System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
+            System.out.println("estadisticas: ");
+            System.out.println("victorias: "+jugadores.get(jugadorActual).usuario.getVictory());
+            for(int i =0; i<jugadores.get(jugadorActual).; i++){}
             ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
             if (ganador) {
                 jugadores.get(jugadorActual).usuario.setVictory(jugadores.get(jugadorActual).usuario.getVictory()+1);
             }jugadorActual++;
+            try {
+                saveFichaJson();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             if (jugadorActual == jugadores.size()) jugadorActual = 0;
             System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
-
-//            Turno t = new Turno(jugadores, scanner, questions, jugadorActual);
-//            Future<Void> futuro = executor.submit(t);
-//            // Ejecutar el turno
-//            try {
-//                futuro.get(questions.getTime(), TimeUnit.SECONDS); // El límite de tiempo solo afecta al turno (pregunta)
-//                printBoard();
-//                System.out.println("Presione enter para continuar...");
-//                scanner.nextLine(); // Aquí no hay límite de tiempo
-//                jugadorActual++;
-//                if (jugadorActual == jugadores.size()) jugadorActual = 0;
-//            } catch (TimeoutException e) {
-//                // Solo si se acabó el tiempo en la pregunta
-//                System.out.println("\nSe te acabó el tiempo en la pregunta!");
-//                futuro.cancel(true); // Cancelar la tarea
-//                jugadorActual++;
-//                if (jugadorActual == jugadores.size()) jugadorActual = 0;
-//
-//            } catch (Exception e) {
-//                System.out.println("Error inesperado: " + e.getMessage());
-//            }
         }
         System.out.println("Jugador actual ganó la partida: " + jugadores.get(jugadorActual).nickName);
-//        executor.shutdown();
     }
 
-    // Definimos el tamaño de cada celda (según la salida de paint())
+    /**
+     * Definimos el tamaño de cada celda en el tablero.
+     */
     private static final int CELL_WIDTH = 6;
     private static final int CELL_HEIGHT = 4;
-    // Suponemos una matriz “canvas” lo suficientemente grande para alojar el
-    // tablero
-    // Aquí elegimos 7 celdas de ancho por 7 celdas de alto (esto depende del layout
-    // que definas)
+
+    /**
+     * Número de columnas y filas en el tablero.
+     */
     private static final int GRID_COLS = 11;
     private static final int GRID_ROWS = 8;
 
     /**
      * Imprime el tablero en la terminal.
-     * El tablero se centra en la terminal y los rayos se dibujan alrededor del
-     * centro.
+     * El tablero se centra en la terminal y los rayos se dibujan alrededor del centro.
      */
     public void printBoard() {
         int brazoLen = 6; // longitud de cada brazo (ahora 6 casillas)
@@ -193,23 +243,20 @@ public class TableTop {
                 }
             }
         }
-        // Dibuja líneas para cerrar el círculo (opcional, para mayor densidad)
-        /*
-         * for (int i = 0; i < 6; i++) {
-         * int x0 = extremos[i][0] + CELL_WIDTH / 2;
-         * int y0 = extremos[i][1] + CELL_HEIGHT / 2;
-         * int x1 = extremos[(i + 1) % 6][0] + CELL_WIDTH / 2;
-         * int y1 = extremos[(i + 1) % 6][1] + CELL_HEIGHT / 2;
-         * drawLine(canvas, x0, y0, x1, y1, '*');
-         * }
-         */
         // Imprime el canvas en la terminal
         for (char[] row : canvas) {
             System.out.println(new String(row));
         }
     }
 
-    // Método auxiliar para dibujar la representación de una casilla en el canvas
+    /**
+     * Método auxiliar para dibujar la representación de una casilla en el canvas.
+     *
+     * @param canvas El lienzo donde se dibuja la casilla.
+     * @param cellAscii La representación ASCII de la casilla.
+     * @param startX Coordenada X donde empieza a dibujar.
+     * @param startY Coordenada Y donde empieza a dibujar.
+     */
     private static void drawCell(char[][] canvas, String cellAscii, double startX, double startY) {
         String[] lines = cellAscii.split("\n");
         for (int i = 0; i < lines.length; i++) {
@@ -225,7 +272,16 @@ public class TableTop {
         }
     }
 
-    // Dibuja una línea simple entre dos puntos usando el algoritmo de Bresenham
+    /**
+     * Dibuja una línea simple entre dos puntos usando el algoritmo de Bresenham.
+     *
+     * @param canvas El lienzo donde se dibuja la línea.
+     * @param x0 Coordenada X del primer punto.
+     * @param y0 Coordenada Y del primer punto.
+     * @param x1 Coordenada X del segundo punto.
+     * @param y1 Coordenada Y del segundo punto.
+     * @param c El carácter con el que se dibuja la línea.
+     */
     private static void drawLine(char[][] canvas, int x0, int y0, int x1, int y1, char c) {
         int dx = Math.abs(x1 - x0);
         int dy = Math.abs(y1 - y0);
@@ -250,6 +306,3 @@ public class TableTop {
         }
     }
 }
-
-
-
