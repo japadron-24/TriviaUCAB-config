@@ -81,7 +81,9 @@ public class App {
             }
             if (opcion == 2) {
                 System.out.println("Cargar partida anterior");
-                loadFichaJson();
+                loadJson();
+                loadUsuariosJson();
+                partida.cargarPositions();
             } else if (opcion == 0) {
                 System.out.println("Hasta la proxima");
             } else {
@@ -100,7 +102,7 @@ public class App {
         for (int i = 0; i < MAX_PLAYERS; i++) {
             Usuario usuario = joinSesion();
             if (usuario != null) {
-                fichasJugadores.add(new Ficha(usuario.getUserName(), usuario, Category.values(),
+                fichasJugadores.add(new Ficha(usuario.getUserName(), usuario,
                         null));
                 System.out.println("Usuario " + usuario.getUserName() + " registrado correctamente.");
                 if (!doContinue(" agregando otro usuario?")) {
@@ -115,6 +117,8 @@ public class App {
             }
         }
     }
+
+
 
     /**
      * Método que permite registrar múltiples usuarios nuevos.
@@ -315,39 +319,7 @@ public class App {
     /**
      * Carga la información de las fichas de jugadores desde un archivo JSON.
      */
-    public void loadFichaJson() {
-        String houseFolder = System.getProperty("ficha.home");
-        Gson gson = new Gson();
-        String destinyFolder = houseFolder + File.separator + ".config";
-        File destinyFolderFile = new File(destinyFolder);
-        if (!destinyFolderFile.exists()) {
-            boolean created = destinyFolderFile.mkdir();
-            if (!created) {
-                throw new RuntimeException();
-            }
-        }
-        var a = new File(destinyFolderFile + File.separator + "fichas.json");
-        if (!(a.exists())) {
-            try {
-                boolean created = a.createNewFile();
-                if (!created)
-                    throw new IOException();
-                this.fichasJugadores = new ArrayList<Ficha>();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try (FileReader r = new FileReader(destinyFolderFile + File.separator + "fichas.json")) {
-                BufferedReader bufferedReader = new BufferedReader(r);
-                Type listType = new TypeToken<ArrayList<Ficha>>() {
-                }.getType();
-                fichasJugadores = gson.fromJson(bufferedReader, listType);
-            } catch (IOException e) {
-                throw new RuntimeException("Error al leer el archivo JSON", e);
-            }
-        }
 
-    }
 
     /**
      * Carga los usuarios desde el archivo JSON. Si no existe, se crea uno nuevo.

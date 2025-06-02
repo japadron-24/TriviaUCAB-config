@@ -24,7 +24,7 @@ public class Ficha {
     /**
      * Array que representa los triángulos (categorías ganadas).
      */
-    ArrayList<Integer> triangulos;
+    ArrayList<Integer> triangulos=new ArrayList<>();
 
     /**
      * Casilla actual en la que se encuentra esta ficha.
@@ -59,11 +59,9 @@ public class Ficha {
      * @param triangulos Categorías disponibles.
      * @param posicion Posición inicial de la ficha.
      */
-    public Ficha(String nickName, Usuario usuario, Category[] triangulos, Square posicion) {
+    public Ficha(String nickName, Usuario usuario, Square posicion) {
         this.nickName = nickName;
         this.usuario = usuario;
-        this.triangulos = new boolean[triangulos.length];
-        Arrays.fill(this.triangulos, false);
         this.posicion = posicion;
         this.salido = false;
     }
@@ -157,9 +155,13 @@ public class Ficha {
      *
      * @return {@code true} si el jugador tiene todos los triángulos, {@code false} si no.
      */
-    public int triangulo(int i) {
-        return this.triangulos.get(i);
+    public boolean triangulo() {
+        if(triangulos.size()==6) {
+            return true;
+        }
+        return false;
     }
+
 
     /**
      * Marca un triángulo como completado para una categoría específica.

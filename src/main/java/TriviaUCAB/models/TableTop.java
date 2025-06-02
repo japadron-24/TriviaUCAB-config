@@ -39,7 +39,7 @@ public class TableTop {
     /**
      * Carpeta de inicio del sistema donde se guardarán los datos de los jugadores.
      */
-    String homeFolder = System.getProperty("ficha.home");
+    String homeFolder = System.getProperty("user.home");
 
     /**
      * Constructor de la clase TableTop.
@@ -83,6 +83,73 @@ public class TableTop {
         }
     }
 
+    public void loadFichaJson() {
+        Gson gson = new Gson();
+        String destinyFolder = homeFolder + File.separator + ".config";
+        File destinyFolderFile = new File(destinyFolder);
+        if (!destinyFolderFile.exists()) {
+            boolean created = destinyFolderFile.mkdir();
+            if (!created) {
+                throw new RuntimeException();
+            }
+        }
+        var a = new File(destinyFolderFile + File.separator + "fichas.json");
+        if (!(a.exists())) {
+            try {
+                boolean created = a.createNewFile();
+                if (!created)
+                    throw new IOException();
+                this.jugadores = new ArrayList<Ficha>();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (FileReader r = new FileReader(destinyFolderFile + File.separator + "fichas.json")) {
+                BufferedReader bufferedReader = new BufferedReader(r);
+                Type listType = new TypeToken<ArrayList<Ficha>>() {
+                }.getType();
+                jugadores = gson.fromJson(bufferedReader, listType);
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo JSON", e);
+            }
+        }
+
+    }
+
+    public void cargarPositions(){
+        loadFichaJson();
+        for(int i=0; i<jugadores.size(); i++){
+            for(Square squareActual: centro.rayos){
+                for (int j = 0; j <15 ; j++) {
+                    if (squareActual instanceof  SquareRayo sr){
+                        if (jugadores.get(i).getPosition()==sr.position) {
+                            jugadores.get(i).posicion = sr;
+                            jugadores.get(i).positionTable = sr.position;
+                            break;
+                        }
+                        squareActual=sr.next;
+                    }else if (squareActual instanceof SquareCategory sC)
+                    {
+                        if (jugadores.get(i).getPosition()==sC.position) {
+                            jugadores.get(i).posicion = sC;
+                            jugadores.get(i).positionTable = sC.position;
+                            break;
+                        }
+                        squareActual=((SquareCategory) sC.next);
+                    } else if (squareActual instanceof SquareSpecial sS) {
+                        if (jugadores.get(i).getPosition()==sS.position) {
+                            jugadores.get(i).posicion = sS;
+                            jugadores.get(i).positionTable = sS.position;
+                            break;
+                        }
+                        squareActual=((SquareCategory) sS.next);
+                    }
+
+                }
+            }
+        }
+    }
+
     /**
      * Inicia el juego, realizando los turnos de los jugadores hasta que uno gane.
      *
@@ -93,6 +160,8 @@ public class TableTop {
     public void startGame(Scanner scanner, Questions questions) throws IOException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         int jugadorActual = 0;
+        int enums=0;
+        var categories = Category.values();
         while (!ganador) {
             System.out.print("\033[H\033[2J");
             System.out.flush();
@@ -100,7 +169,15 @@ public class TableTop {
             System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
             System.out.println("estadisticas: ");
             System.out.println("victorias: "+jugadores.get(jugadorActual).usuario.getVictory());
-            for(int i =0; i<jugadores.get(jugadorActual).; i++){}
+            for(int j=0; j<6; j++) {
+                for (int i = 0; i < jugadores.get(jugadorActual).triangulos.size(); i++) {
+                    if(j==jugadores.get(jugadorActual).triangulos.get(i)) {
+                        enums++;
+                    }
+                }
+                System.out.println("categoria: "+categories[j]+" hay un total de respondidas: "+enums);
+                enums=0;
+            }
             ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
             if (ganador) {
                 jugadores.get(jugadorActual).usuario.setVictory(jugadores.get(jugadorActual).usuario.getVictory()+1);
