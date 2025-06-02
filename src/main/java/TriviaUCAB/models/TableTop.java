@@ -36,6 +36,11 @@ public class TableTop {
             this.printBoard();
             System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
             ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
+            if (ganador) {
+                jugadores.get(jugadorActual).usuario.setVictory(jugadores.get(jugadorActual).usuario.getVictory()+1);
+            }
+            jugadorActual++;
+            if (jugadorActual == jugadores.size()) jugadorActual = 0;
             System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
 
 //            Turno t = new Turno(jugadores, scanner, questions, jugadorActual);

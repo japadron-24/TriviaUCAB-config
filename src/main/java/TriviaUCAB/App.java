@@ -37,7 +37,7 @@ public class App {
         }
     }
 
-    public App() {
+    public App() throws IOException {
         System.out.println("Bienvenidos al menu para iniciar el juego");
         loadJson();
         loadUsuariosJson();
@@ -52,6 +52,11 @@ public class App {
                     System.out.println("No se han registrado usuarios. Saliendo del juego.");
                 } else {
                     this.partida = new TableTop(fichasJugadores, scanner, questions);
+                    try {
+                        this.saveUsersJson();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             if (opcion == 2) {
@@ -305,7 +310,7 @@ public class App {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }  else {
+        } else {
             try (FileReader r = new FileReader(destinyFolderFile + File.separator + "users.json")) {
                 // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
                 // en stack overflow

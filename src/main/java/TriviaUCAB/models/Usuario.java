@@ -5,13 +5,25 @@ package TriviaUCAB.models;
  * Contiene el nombre de usuario y la contraseña (almacenada como hash SHA-256).
  */
 public class Usuario {
-    /** Nombre de usuario del usuario. */
+    /**
+     * Nombre de usuario del usuario.
+     */
     public String userName;
 
-    /** Contraseña del usuario, almacenada como hash SHA-256. */
+    /**
+     * Contraseña del usuario, almacenada como hash SHA-256.
+     */
     private String password;
 
-    
+    private int victory;
+
+    public int getVictory() {
+        return this.victory;
+    }
+    public void setVictory(int victory) {
+        this.victory= victory;
+    }
+
     /**
      * Constructor de la clase Usuario.
      *
@@ -23,6 +35,7 @@ public class Usuario {
         this.password = Validator.calcularSha256(password);
     }
 
+    private int victories;
 
     /**
      * Obtiene la contraseña del usuario (almacenada como hash SHA-256).
@@ -50,7 +63,7 @@ public class Usuario {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     /**
      * Establece una nueva contraseña. La contraseña se guarda como hash SHA-256.
      *
@@ -59,7 +72,6 @@ public class Usuario {
     public void setPassword(String password) {
         this.password = Validator.calcularSha256(password);
     }
-
 
 }
 
