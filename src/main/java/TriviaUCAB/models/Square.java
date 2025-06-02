@@ -7,4 +7,5 @@ abstract public class Square {
 
     abstract public int action(Scanner scanner,Ficha jugador);
 
+    abstract  public Square reaction(Scanner scanner,Ficha jugador);
 }

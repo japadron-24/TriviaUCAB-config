@@ -1,5 +1,8 @@
 package TriviaUCAB.models;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 /**
  * Enumeración que representa las distintas categorías de preguntas en la trivia.
  * Cada categoría tiene un color asociado para su representación visual.
@@ -22,5 +25,6 @@ public enum Category {
     ARTELITERATURA,
 
     /** Preguntas sobre entretenimiento (cine, música, etc.). Color: rosado. */
-    ENTRETENIMIENTO
+    ENTRETENIMIENTO;
+
 }

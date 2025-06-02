@@ -2,7 +2,7 @@ package TriviaUCAB.models;
 
 import java.util.Scanner;
 
-public class SquareRayo extends Square implements movimientoBidireccional {
+public class SquareRayo extends Square implements movimientoBidireccional ,CategoryQuestion {
     protected Category categoria;
     protected SquareCategory next;
     protected SquareCategory previous;
@@ -24,7 +24,9 @@ public class SquareRayo extends Square implements movimientoBidireccional {
     @Override
     public int action(Scanner scanner, Ficha jugador) {
         if (jugador.triangulo()) {
+            jugador.entrado = true;
             return 2;
+
         } else {
             System.out.println("Quisieras ir hacia adelante o hacia atrás?");
             int exit = Validator.validarInt("1. Adelante\n0.Atras", scanner);
@@ -88,4 +90,46 @@ public class SquareRayo extends Square implements movimientoBidireccional {
     public Square getPrevious() {
         return previous;
     }
+
+    @Override
+    public Square reaction(Scanner scanner,Ficha jugador) {
+        return null;
+    }
+    public boolean revisarRespuesta(Scanner scanner, Question question) {
+        System.out.print("Ingrese su respuesta: ");
+        String respuesta = scanner.nextLine();
+        if (
+                respuesta.equalsIgnoreCase(question.getAnswer()) ||
+                        question.getAnswer().toLowerCase().contains(respuesta.toLowerCase()) ||
+                        respuesta.toLowerCase().contains(question.getAnswer().toLowerCase())
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public Square reaction(Scanner scanner, Ficha jugador, Questions questions) {
+        Question question = questions.getRandomQuestion(categoria);
+
+        if (question == null) {
+            System.out.println("No hay preguntas disponibles para esta categoría.");
+            return this;
+        }
+
+        System.out.println("Pregunta: " + question.getQuestion());
+        boolean respuestaCorrecta = revisarRespuesta(scanner, question);
+
+        if (respuestaCorrecta) {
+            System.out.println("¡Respuesta correcta!");
+            jugador.incrementarPuntos(categoria);
+            return getNext();
+        } else {
+            System.out.println("Respuesta incorrecta.");
+            return this;
+        }
+    }
+
+
+
+
 }

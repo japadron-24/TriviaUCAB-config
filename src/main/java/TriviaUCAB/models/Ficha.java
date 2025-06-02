@@ -1,6 +1,6 @@
 package TriviaUCAB.models;
 
-import java.awt.desktop.AboutEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -11,6 +11,8 @@ public class Ficha {
     boolean[] triangulos;
     Square posicion;
     boolean salido;
+    boolean entrado=false;
+    boolean gano=false;
 
     public Ficha(String nickName, Usuario usuario, Category[] triangulos, Square posicion) {
         this.nickName = nickName;
@@ -31,21 +33,49 @@ public class Ficha {
         return dado;// Genera un número entre 1 y 6
     }
 
-    public void avanzar(Scanner scanner) {
+    public boolean avanzar(Scanner scanner, Questions questions) {
         if (!salido && posicion instanceof brazo saliendo) {
             if (posicion instanceof SquareCenter)
                 posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this, null);
             else posicion = saliendo.salir(tirarDado(), 1, this, scanner);
             posicion.cantidadFichas++;
-
-        } else {
+            if (posicion instanceof CategoryQuestion cQ) {
+                cQ.reaction(scanner, this, questions);
+            }
+        }
+        else if(entrado) {
+            if (posicion instanceof  brazo saliendo) {
+                posicion = saliendo.entrar(tirarDado(), 1, this, scanner);
+                if (posicion instanceof SquareCenter sC){
+                    sC.reaction(scanner,this,questions);
+                    if (this.gano) return true;
+                }
+            }
+        }else{
             if (posicion instanceof movimientoBidireccional casilla) {
                 posicion = casilla.movimiento(tirarDado(), this.posicion.action(scanner, this), this);
                 posicion.cantidadFichas++;
+                if (posicion instanceof SquareSpecial sS) {
+                    posicion = sS.reaction(scanner, this);
+                    posicion.cantidadFichas++;
+                }
+                if (posicion instanceof CategoryQuestion cQ) {
+                    cQ.reaction(scanner, this, questions);
+                }
             }
-            ;
         }
+        return false;
+    }
 
+    public ArrayList<Question> getQuestions(Questions questions, Category category) {
+        ArrayList<Question> aprobadas = questions.getApproved();
+        ArrayList<Question> filtradas = new ArrayList<>();
+        for (Question q : aprobadas) {
+            if (q.getCategory().equals(category)) {
+                filtradas.add(q);
+            }
+        }
+        return filtradas;
     }
 
     public boolean triangulo() {
@@ -57,22 +87,9 @@ public class Ficha {
         }
         return complet;
     }
-}
 
-/*
-fa.triangulos[categoriaCarta]=true;
-
-fa.triangulos[categoriaCarta]=categoriaCatarta;
-
-for(String t: fa.triangulos){
-    if(t){
-       if(t.equals(categoriaCarta)){
-            return 0;
-       }
-    }else{
-        t=categoriaCarta
-        return 1;
+    public void incrementarPuntos(Category categoria) {
+        int n =categoria.ordinal();
+        this.triangulos[n] = true;
     }
 }
-*/
-

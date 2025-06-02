@@ -2,6 +2,7 @@ package TriviaUCAB.models;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Random;
 
 /**
  * Clase que administra las preguntas de trivia, clasificadas como en espera de aprobación,
@@ -9,31 +10,45 @@ import java.util.Scanner;
  */
 public class Questions {
 
-    /** Lista de preguntas en espera de aprobación. */
+    /**
+     * Lista de preguntas en espera de aprobación.
+     */
     public ArrayList<Question> waitApproved = new ArrayList<>();
 
-    /** Lista de preguntas aprobadas. */
+    /**
+     * Lista de preguntas aprobadas.
+     */
     private ArrayList<Question> approved = new ArrayList<>();
 
-    /** Lista de preguntas rechazadas. */
+    /**
+     * Lista de preguntas rechazadas.
+     */
     private ArrayList<Question> rejected = new ArrayList<>();
 
-    /** Tiempo límite permitido para responder preguntas (máximo 2 minutos). */
-    private double time;
+    /**
+     * Tiempo límite permitido para responder preguntas (máximo 2 minutos).
+     */
+    private int time;
+
+    public ArrayList<Question> getApproved() {
+        return approved;
+    }
 
     /**
      * Solicita al usuario que establezca el tiempo límite para responder las preguntas.
      * El tiempo debe estar entre 0 y 2 minutos.
      */
-    public void setTime() {
-        System.out.println("Ingrese el tiempo límite de las preguntas que no exceda de dos minutos");
-        Scanner limitedTime = new Scanner(System.in);
-        double time = limitedTime.nextDouble();
-        while (time < 0 || time > 2) {
-            System.out.print("El tiempo que introdujo se excede del límite: ");
-            time = limitedTime.nextDouble();
+    public void setTime(Scanner scanner) {
+        while (time < 0 || time > 180) {
+            this.time = Validator.validarInt("Ingrese el tiempo límite de las preguntas que no exceda de dos minutos 180 segundos",scanner);
+            if (time < 0 || time > 180) {
+                System.out.print("El tiempo que introdujo se excede del límite: ");
+            }
         }
-        this.time = time;
+    }
+
+    public int getTime() {
+        return time;
     }
 
     /**
@@ -117,8 +132,8 @@ public class Questions {
     /**
      * Aprueba una pregunta si no fue creada por el usuario actual.
      *
-     * @param position     Posición de la pregunta en espera.
-     * @param currentUser  Usuario que intenta aprobar la pregunta.
+     * @param position    Posición de la pregunta en espera.
+     * @param currentUser Usuario que intenta aprobar la pregunta.
      */
     public void addApproved(int position, Usuario currentUser) {
         if (position == -1) {
@@ -194,4 +209,27 @@ public class Questions {
         }
         System.out.println("+-----+--------------------------------------------------------------+--------------------------------+-------------------+----------------------+");
     }
+
+    /**
+     * Devuelve una pregunta aleatoria de una categoría específica entre las preguntas aprobadas.
+     *
+     * @param category La categoría de la pregunta.
+     * @return Una pregunta aleatoria de esa categoría o null si no hay ninguna disponible.
+     */
+    // ✅ NUEVO MÉTODO: Obtener una pregunta aleatoria por categoría
+    public Question getRandomQuestion(Category category) {
+        ArrayList<Question> filtradas = new ArrayList<>();
+        for (Question q : approved) {
+            if (q.getCategory() == category) {
+                filtradas.add(q);
+            }
+        }
+        if (filtradas.isEmpty()) {
+            return null;
+        }
+        Random rand = new Random();
+        return filtradas.get(rand.nextInt(filtradas.size()));
+    }
+
+
 }

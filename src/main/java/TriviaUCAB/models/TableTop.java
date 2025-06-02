@@ -1,7 +1,9 @@
 package TriviaUCAB.models;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.util.concurrent.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,53 +17,50 @@ public class TableTop {
     int MAX_PLAYERS = 6;
     boolean ganador = false;
 
-    public TableTop(ArrayList<Ficha> jugadores, Scanner scanner) {
+    public TableTop(ArrayList<Ficha> jugadores, Scanner scanner, Questions questions) {
         centro = new SquareCenter(jugadores.size());
         this.jugadores = jugadores;
         for (Ficha jugadorActual : this.jugadores) {
             jugadorActual.posicion = this.centro;
         }
-        startGame();
+        startGame(scanner, questions);
     }
-    public  void startGame(){
-        int turnoJugador = 0;
+
+    public void startGame(Scanner scanner, Questions questions) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        int jugadorActual = 0;
+
         while (!ganador) {
-            this.turno(turnoJugador++,scanner);
-            if (jugadores.size() == turnoJugador) turnoJugador = 0;
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+            this.printBoard();
+            System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
+            ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
+            System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
+
+//            Turno t = new Turno(jugadores, scanner, questions, jugadorActual);
+//            Future<Void> futuro = executor.submit(t);
+//            // Ejecutar el turno
+//            try {
+//                futuro.get(questions.getTime(), TimeUnit.SECONDS); // El límite de tiempo solo afecta al turno (pregunta)
+//                printBoard();
+//                System.out.println("Presione enter para continuar...");
+//                scanner.nextLine(); // Aquí no hay límite de tiempo
+//                jugadorActual++;
+//                if (jugadorActual == jugadores.size()) jugadorActual = 0;
+//            } catch (TimeoutException e) {
+//                // Solo si se acabó el tiempo en la pregunta
+//                System.out.println("\nSe te acabó el tiempo en la pregunta!");
+//                futuro.cancel(true); // Cancelar la tarea
+//                jugadorActual++;
+//                if (jugadorActual == jugadores.size()) jugadorActual = 0;
+//
+//            } catch (Exception e) {
+//                System.out.println("Error inesperado: " + e.getMessage());
+//            }
         }
-    }
-    public void saveJson() {
-        String destinyFolder = System.getProperty("user.home") + File.separator + ".config";
-        File destinyFolderFile = new File(destinyFolder);
-        if (!destinyFolderFile.exists()) {
-            boolean created = destinyFolderFile.mkdir();
-            if (!created) {
-                throw new RuntimeException();
-            }
-        }
-        Gson gson = new Gson();
-        String json = gson.toJson(this);
-        File data = new File(destinyFolder + File.separator + "partidaAnterior.json");
-
-        try (FileWriter writer = new FileWriter(data)) {
-            writer.write(json);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    public void turno(int jugadorActual, Scanner scanner) {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-        System.out.println("Turno del jugador: " + jugadores.get(jugadorActual).nickName);
-        jugadores.get(jugadorActual).avanzar(scanner);
-        System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
-        this.printBoard();
-        System.out.print("Presione enter para continuar...");
-        scanner.nextLine();
-        saveJson();
-
+        System.out.println("Jugador actual ganó la partida: " + jugadores.get(jugadorActual).nickName);
+//        executor.shutdown();
     }
 
     // Definimos el tamaño de cada celda (según la salida de paint())

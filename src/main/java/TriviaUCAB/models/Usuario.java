@@ -11,7 +11,7 @@ public class Usuario {
     /** Contraseña del usuario, almacenada como hash SHA-256. */
     private String password;
 
-
+    
     /**
      * Constructor de la clase Usuario.
      *

@@ -41,24 +41,27 @@ public class App {
         System.out.println("Bienvenidos al menu para iniciar el juego");
         loadJson();
         loadUsuariosJson();
-        int opcion = Validator.validarInt(
-                "1. Iniciar sesión de  usarios Registrados\n2. Cargar partida Anterior\n"+ "0. Salir",
-                scanner);
-        if (opcion == 1) {
-            cargarUsuarios();
-            if (fichasJugadores.isEmpty()) {
-                System.out.println("No se han registrado usuarios. Saliendo del juego.");
-            } else {
-                this.partida = new TableTop(fichasJugadores, scanner);
+        int opcion = -1;
+        while (opcion != 0) {
+            opcion = Validator.validarInt(
+                    "1. Iniciar sesión de  usarios Registrados\n2. Cargar partida Anterior\n" + "0. Salir",
+                    scanner);
+            if (opcion == 1) {
+                cargarUsuarios();
+                if (fichasJugadores.isEmpty()) {
+                    System.out.println("No se han registrado usuarios. Saliendo del juego.");
+                } else {
+                    this.partida = new TableTop(fichasJugadores, scanner, questions);
+                }
             }
-        }
-        if (opcion == 2) {
-            System.out.println("Cargar partida anterior");
-            loadTableTopJson();
-        } else if (opcion == 0) {
-            System.out.println("Hasta la proxima");
-        } else {
-            System.out.println("Opcion no valida, por favor ingrese 0,1 o 2");
+            if (opcion == 2) {
+                System.out.println("Cargar partida anterior");
+//            loadTableTopJson(); no funciona
+            } else if (opcion == 0) {
+                System.out.println("Hasta la proxima");
+            } else {
+                System.out.println("Opcion no valida, por favor ingrese 0,1 o 2");
+            }
         }
 
     }
@@ -302,7 +305,7 @@ public class App {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } else {
+        }  else {
             try (FileReader r = new FileReader(destinyFolderFile + File.separator + "users.json")) {
                 // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
                 // en stack overflow
@@ -353,39 +356,4 @@ public class App {
         }
     }
 
-    public void loadTableTopJson() {
-        Gson gson = new Gson();
-        String destinyFolder = homeFolder + File.separator + ".config";
-        File destinyFolderFile = new File(destinyFolder);
-        if (!destinyFolderFile.exists()) {
-            boolean created = destinyFolderFile.mkdir();
-            if (!created) {
-                throw new RuntimeException();
-            }
-        }
-
-        var a = new File(destinyFolderFile + File.separator + "partidaAnterior.json");
-        if (!(a.exists())) {
-            try {
-                boolean created = a.createNewFile();
-                if (!created)
-                    throw new IOException();
-                cargarUsuarios();
-                this.partida = new TableTop(this.fichasJugadores, scanner);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try (FileReader reader = new FileReader(destinyFolderFile + File.separator + "data.json")) {
-                // Se recomienda usar BufferedReader para mejorar el rendimiento según un post
-                // en stack overflow
-                BufferedReader bufferedReader = new BufferedReader(reader);
-                this.partida = gson.fromJson(bufferedReader, TableTop.class);
-                this.partida.startGame();
-
-            } catch (IOException e) {
-                throw new RuntimeException("Error al leer el archivo JSON", e);
-            }
-        }
-    }
 }
