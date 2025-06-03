@@ -83,7 +83,7 @@ public class App {
                 System.out.println("Cargar partida anterior");
                 loadJson();
                 loadUsuariosJson();
-                partida.cargarPositions();
+                partida = new TableTop(scanner, questions);
             } else if (opcion == 0) {
                 System.out.println("Hasta la proxima");
             } else {

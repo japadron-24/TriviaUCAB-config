@@ -57,6 +57,18 @@ public class TableTop {
             jugadorActual.posicion = this.centro;
         }
         startGame(scanner, questions);
+    }/**
+     * Constructor de la clase TableTop.
+     * Inicializa el tablero y asigna la posición de los jugadores en el centro.
+     *
+     * @param scanner Objeto Scanner para capturar entradas del usuario.
+     * @param questions Preguntas que se usarán durante el juego.
+     * @throws IOException Si ocurre un error de entrada/salida al guardar datos.
+     */
+    public TableTop(Scanner scanner, Questions questions) throws IOException {
+        centro = new SquareCenter(0);
+        this.cargarPositions();
+        startGame(scanner, questions);
     }
 
     /**
@@ -73,9 +85,19 @@ public class TableTop {
                 throw new IOException();
         }
         Gson gson = new Gson();
+
+        Square listaSquare[]= new Square[MAX_PLAYERS];
+        int contador = 0;
+        for (Ficha fa:jugadores){
+            listaSquare[contador++]=fa.posicion;
+            fa.posicion=null;
+        }
         String json = gson.toJson(this.jugadores);
         File data = new File(destinyFolder + File.separator + "fichas.json");
-
+        contador=0;
+        for (Ficha fa:jugadores){
+            fa.posicion=listaSquare[contador++];
+        }
         try (FileWriter writer = new FileWriter(data)) {
             writer.write(json);
         } catch (IOException e) {
@@ -120,29 +142,32 @@ public class TableTop {
         loadFichaJson();
         for(int i=0; i<jugadores.size(); i++){
             for(Square squareActual: centro.rayos){
-                for (int j = 0; j <15 ; j++) {
+                for (int j = 0; j <13 ; j++) {
                     if (squareActual instanceof  SquareRayo sr){
                         if (jugadores.get(i).getPosition()==sr.position) {
                             jugadores.get(i).posicion = sr;
                             jugadores.get(i).positionTable = sr.position;
+                            jugadores.get(i).posicion.cantidadFichas++;
                             break;
                         }
-                        squareActual=sr.next;
+                        squareActual=(Square) sr.next;
                     }else if (squareActual instanceof SquareCategory sC)
                     {
                         if (jugadores.get(i).getPosition()==sC.position) {
                             jugadores.get(i).posicion = sC;
                             jugadores.get(i).positionTable = sC.position;
+                            jugadores.get(i).posicion.cantidadFichas++;
                             break;
                         }
-                        squareActual=((SquareCategory) sC.next);
+                        squareActual=((Square) sC.next);
                     } else if (squareActual instanceof SquareSpecial sS) {
                         if (jugadores.get(i).getPosition()==sS.position) {
                             jugadores.get(i).posicion = sS;
                             jugadores.get(i).positionTable = sS.position;
+                            jugadores.get(i).posicion.cantidadFichas++;
                             break;
                         }
-                        squareActual=((SquareCategory) sS.next);
+                        squareActual=((Square) sS.next);
                     }
 
                 }
