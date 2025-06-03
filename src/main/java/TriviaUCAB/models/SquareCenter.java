@@ -124,7 +124,7 @@ public class SquareCenter extends Square implements brazo, CategoryQuestion {
 
             if (categorias.length == currentCategory) currentCategory = 0;
             squareActual = rayoActual.next = new SquareCategory(categorias[currentCategory++], null, rayoActual, position++);
-
+            if (categorias.length == currentCategory) currentCategory = 0;
             for (int j = 1; j < 6; j++) {
                 if (j == 1 || j == 4) {
                     squareActual.next = new SquareSpecial(null, squareActual, position++);
