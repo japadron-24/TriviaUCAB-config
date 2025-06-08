@@ -1,6 +1,7 @@
 package TriviaUCAB.models;
 
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 /**
  * Clase que representa una casilla de categoría en el tablero.
@@ -79,10 +80,10 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
     /**
      * Lógica de salida desde esta casilla hacia otro recorrido.
      *
-     * @param move     cantidad de movimientos.
-     * @param exit     dirección de salida.
-     * @param jugador  ficha del jugador.
-     * @param scanner  entrada del usuario.
+     * @param move    cantidad de movimientos.
+     * @param exit    dirección de salida.
+     * @param jugador ficha del jugador.
+     * @param scanner entrada del usuario.
      * @return casilla destino luego del movimiento.
      */
     @Override
@@ -107,9 +108,9 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
     /**
      * Movimiento dentro del recorrido en ambas direcciones.
      *
-     * @param move     número de pasos a mover.
-     * @param exit     dirección de movimiento (0: previo, 1: siguiente).
-     * @param jugador  ficha del jugador.
+     * @param move    número de pasos a mover.
+     * @param exit    dirección de movimiento (0: previo, 1: siguiente).
+     * @param jugador ficha del jugador.
      * @return casilla destino.
      */
     @Override
@@ -143,91 +144,106 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
         }
 
         System.out.println("Pregunta: " + question.getQuestion());
-        boolean respuestaCorrecta = revisarRespuesta(scanner, question);
+        boolean respuestaCorrecta = false;
+        try (ScheduledExecutorService executorService = Executors
+                .newSingleThreadScheduledExecutor()) {
+            try (Scanner scanner1 = new Scanner(System.in)) {
 
-        if (respuestaCorrecta) {
-            System.out.println("¡Respuesta correcta!");
-            jugador.incrementarPuntos(categoria);
-            return getNext();
-        } else {
-            System.out.println("Respuesta incorrecta.");
-            return this;
-        }
-    }
+                RevisarRespuesta revisor = new RevisarRespuesta(question, scanner1);
+                Future<Boolean> future =
+                        executorService.submit(revisor);
+                future.get(questions.getTime(), TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                System.out.println("Se ha acabado el tiempo de responder la pregunta, turno del siguiente jugador ");
+            }
+            }
 
-    /**
-     * Reacción neutra al llegar a la casilla (sin pregunta).
-     *
-     * @param scanner entrada del usuario.
-     * @param jugador ficha del jugador.
-     * @return esta misma casilla.
-     */
-    @Override
-    public Square reaction(Scanner scanner, Ficha jugador) {
-        return this;
-    }
 
-    /**
-     * Revisa la respuesta ingresada por el jugador contra la respuesta correcta.
-     *
-     * @param scanner  entrada del usuario.
-     * @param question pregunta a responder.
-     * @return true si la respuesta es correcta, false en caso contrario.
-     */
-    @Override
-    public boolean revisarRespuesta(Scanner scanner, Question question) {
-        System.out.print("Ingrese su respuesta: ");
-        String respuesta = scanner.nextLine();
-        return respuesta.equalsIgnoreCase(question.getAnswer()) ||
-                question.getAnswer().toLowerCase().contains(respuesta.toLowerCase()) ||
-                respuesta.toLowerCase().contains(question.getAnswer().toLowerCase());
-    }
-
-    /**
-     * Método para entrar desde esta casilla hacia el centro.
-     *
-     * @param move     número de pasos.
-     * @param exit     dirección (no utilizada aquí).
-     * @param jugador  ficha del jugador.
-     * @param scanner  entrada del usuario.
-     * @return casilla destino (centro) si llega, si no esta misma.
-     */
-    @Override
-    public Square entrar(int move, int exit, Ficha jugador, Scanner scanner) {
-        SquareCategory iter = this;
-        this.cantidadFichas--;
-        for (int i = 1; i <= move; i++) {
-            if (iter.next instanceof SquareCenter sC) {
-                if (i == move) return sC;
+            if (respuestaCorrecta) {
+                System.out.println("¡Respuesta correcta!");
+                jugador.incrementarPuntos(categoria);
+                return getNext();
+            } else {
+                System.out.println("Respuesta incorrecta.");
+                return this;
             }
         }
-        return this;
-    }
 
-    /**
-     * Obtiene la categoría asociada a la casilla.
-     *
-     * @return categoría de esta casilla.
-     */
-    public Category getCategoria() {
-        return categoria;
-    }
+        /**
+         * Reacción neutra al llegar a la casilla (sin pregunta).
+         *
+         * @param scanner entrada del usuario.
+         * @param jugador ficha del jugador.
+         * @return esta misma casilla.
+         */
+        @Override
+        public Square reaction (Scanner scanner, Ficha jugador){
+            return this;
+        }
 
-    /**
-     * Obtiene la casilla anterior.
-     *
-     * @return casilla anterior.
-     */
-    public Square getPrevious() {
-        return previous;
-    }
+        /**
+         * Revisa la respuesta ingresada por el jugador contra la respuesta correcta.
+         *
+         * @param scanner  entrada del usuario.
+         * @param question pregunta a responder.
+         * @return true si la respuesta es correcta, false en caso contrario.
+         */
+        @Override
+        public boolean revisarRespuesta (Scanner scanner, Question question){
+            System.out.print("Ingrese su respuesta: ");
+            String respuesta = scanner.nextLine();
+            return respuesta.equalsIgnoreCase(question.getAnswer()) ||
+                    question.getAnswer().toLowerCase().contains(respuesta.toLowerCase()) ||
+                    respuesta.toLowerCase().contains(question.getAnswer().toLowerCase());
+        }
 
-    /**
-     * Obtiene la casilla siguiente.
-     *
-     * @return casilla siguiente.
-     */
-    public Square getNext() {
-        return next;
+        /**
+         * Método para entrar desde esta casilla hacia el centro.
+         *
+         * @param move    número de pasos.
+         * @param exit    dirección (no utilizada aquí).
+         * @param jugador ficha del jugador.
+         * @param scanner entrada del usuario.
+         * @return casilla destino (centro) si llega, si no esta misma.
+         */
+        @Override
+        public Square entrar ( int move, int exit, Ficha jugador, Scanner scanner){
+            SquareCategory iter = this;
+            this.cantidadFichas--;
+            for (int i = 1; i <= move; i++) {
+                if (iter.next instanceof SquareCenter sC) {
+                    if (i == move) return sC;
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Obtiene la categoría asociada a la casilla.
+         *
+         * @return categoría de esta casilla.
+         */
+        public Category getCategoria () {
+            return categoria;
+        }
+
+        /**
+         * Obtiene la casilla anterior.
+         *
+         * @return casilla anterior.
+         */
+        public Square getPrevious () {
+            return previous;
+        }
+
+        /**
+         * Obtiene la casilla siguiente.
+         *
+         * @return casilla siguiente.
+         */
+        public Square getNext () {
+            return next;
+        }
     }
-}
