@@ -19,7 +19,7 @@ public class Questions {
     private ArrayList<Question> rejected = new ArrayList<>();
 
     /** Tiempo límite permitido para responder preguntas (máximo 2 minutos). */
-    private double time;
+    private int time;
 
     /**
      * Solicita al usuario que establezca el tiempo límite para responder las preguntas.
@@ -28,10 +28,10 @@ public class Questions {
     public void setTime() {
         System.out.println("Ingrese el tiempo límite de las preguntas que no exceda de dos minutos");
         Scanner limitedTime = new Scanner(System.in);
-        double time = limitedTime.nextDouble();
+        int time = limitedTime.nextInt();
         while (time < 0 || time > 2) {
             System.out.print("El tiempo que introdujo se excede del límite: ");
-            time = limitedTime.nextDouble();
+            time = limitedTime.nextInt();
         }
         this.time = time;
     }

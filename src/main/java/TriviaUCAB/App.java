@@ -374,7 +374,7 @@ public class App {
                 default:
                     System.out.println("Opción no válida. Intente nuevamente.");
             }
-
+            this.saveJson();
         } while (option != 0);
         return -1;
     }
