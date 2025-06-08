@@ -140,9 +140,10 @@ public class Questions {
      */
     public int getSize(int lista) {
         return switch (lista) {
-            case 1 -> waitApproved.size();
+            case 1,4 -> waitApproved.size();
             case 2 -> approved.size();
             case 3 -> rejected.size();
+
             default -> 0;
         };
     }

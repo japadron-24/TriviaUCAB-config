@@ -35,7 +35,7 @@ public class Usuario {
         this.password = Validator.calcularSha256(password);
     }
 
-    private int victories;
+    //private int victories;
 
     /**
      * Obtiene la contraseña del usuario (almacenada como hash SHA-256).
