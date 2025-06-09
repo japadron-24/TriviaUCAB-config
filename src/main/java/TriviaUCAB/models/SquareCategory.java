@@ -148,23 +148,21 @@ public class SquareCategory extends Square implements brazo, movimientoBidirecci
         try (ScheduledExecutorService executorService = Executors
                 .newSingleThreadScheduledExecutor()) {
 
-            RevisarRespuesta revisor = new RevisarRespuesta(question, scanner);
-            Future<Boolean> future =
-                    executorService.submit(revisor);
-            future.get(questions.getTime(), TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            System.out.println("Se ha acabado el tiempo de responder la pregunta, turno del siguiente jugador ");
-        } finally {
-            System.out.println("se terminó el ejecutor");
+            RevisarRespuesta revisor = new RevisarRespuesta(question);
+            Future<Boolean> future = null;
+            try {
+                future = executorService.submit(revisor);
+                respuestaCorrecta = future.get(questions.getTime(), TimeUnit.SECONDS);
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                future.cancel(true); // Cancelar la ejecución de la tarea
+                System.out.println("Se ha acabado el tiempo de responder la pregunta, presione enter para continuar. ");
+            }
         }
-
 
         if (respuestaCorrecta) {
             System.out.println("¡Respuesta correcta!");
             jugador.incrementarPuntos(categoria);
-            return getNext();
+            return this;
         } else {
             System.out.println("Respuesta incorrecta.");
             return this;

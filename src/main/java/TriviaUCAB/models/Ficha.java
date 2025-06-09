@@ -24,7 +24,7 @@ public class Ficha {
     /**
      * Array que representa los triángulos (categorías ganadas).
      */
-    ArrayList<Integer> triangulos=new ArrayList<>();
+    ArrayList<Integer> triangulos = new ArrayList<>();
 
     /**
      * Casilla actual en la que se encuentra esta ficha.
@@ -54,10 +54,9 @@ public class Ficha {
     /**
      * Constructor de la ficha.
      *
-     * @param nickName Apodo del jugador.
-     * @param usuario Usuario propietario.
-     * @param triangulos Categorías disponibles.
-     * @param posicion Posición inicial de la ficha.
+     * @param nickName   Apodo del jugador.
+     * @param usuario    Usuario propietario.
+     * @param posicion   Posición inicial de la ficha.
      */
     public Ficha(String nickName, Usuario usuario, Square posicion) {
         this.nickName = nickName;
@@ -89,24 +88,27 @@ public class Ficha {
     /**
      * Lógica para avanzar en el tablero dependiendo del estado de la ficha.
      *
-     * @param scanner Entrada del usuario.
+     * @param scanner   Entrada del usuario.
      * @param questions Banco de preguntas del juego.
      * @return {@code true} si el jugador ha ganado, {@code false} en otro caso.
      */
     public boolean avanzar(Scanner scanner, Questions questions) {
+        int dado = 0;
+        do {
+            dado = tirarDado() ;
         if (!salido && posicion instanceof brazo saliendo) {
-            if (posicion instanceof SquareCenter)
-                posicion = saliendo.salir(tirarDado(), this.posicion.action(scanner, this), this, null);
-            else
-                posicion = saliendo.salir(tirarDado(), 1, this, scanner);
-            posicion.cantidadFichas++;
-            this.positionTable = posicion.position;
-            if (posicion instanceof CategoryQuestion cQ) {
-                cQ.reaction(scanner, this, questions);
-            }
+                if (posicion instanceof SquareCenter)
+                    posicion = saliendo.salir(dado, this.posicion.action(scanner, this), this, null);
+                else
+                    posicion = saliendo.salir(dado, 1, this, scanner);
+                posicion.cantidadFichas++;
+                this.positionTable = posicion.position;
+                if (posicion instanceof CategoryQuestion cQ) {
+                    cQ.reaction(scanner, this, questions);
+                }
         } else if (entrado) {
             if (posicion instanceof brazo saliendo) {
-                posicion = saliendo.entrar(tirarDado(), 1, this, scanner);
+                posicion = saliendo.entrar(dado, 1, this, scanner);
                 posicion.cantidadFichas++;
                 this.positionTable = posicion.position;
                 if (posicion instanceof SquareCenter sC) {
@@ -116,7 +118,7 @@ public class Ficha {
             }
         } else {
             if (posicion instanceof movimientoBidireccional casilla) {
-                posicion = casilla.movimiento(tirarDado(), this.posicion.action(scanner, this), this);
+                posicion = casilla.movimiento(dado, this.posicion.action(scanner, this), this);
                 posicion.cantidadFichas++;
                 this.positionTable = posicion.position;
                 if (posicion instanceof SquareSpecial sS) {
@@ -129,6 +131,8 @@ public class Ficha {
                 }
             }
         }
+        } while (dado == 7);
+
         return false;
     }
 
@@ -136,7 +140,7 @@ public class Ficha {
      * Obtiene las preguntas aprobadas de una categoría específica.
      *
      * @param questions Banco de preguntas.
-     * @param category Categoría deseada.
+     * @param category  Categoría deseada.
      * @return Lista de preguntas filtradas por categoría.
      */
     public ArrayList<Question> getQuestions(Questions questions, Category category) {
@@ -156,7 +160,7 @@ public class Ficha {
      * @return {@code true} si el jugador tiene todos los triángulos, {@code false} si no.
      */
     public boolean triangulo() {
-        if(triangulos.size()==6) {
+        if (triangulos.size() == 6) {
             return true;
         }
         return false;
@@ -173,7 +177,7 @@ public class Ficha {
         triangulos.add(n);
     }
 
-    public int getPosition(){
+    public int getPosition() {
         return positionTable;
     }
 

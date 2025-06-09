@@ -204,6 +204,10 @@ public class TableTop {
                 enums=0;
             }
             ganador=jugadores.get(jugadorActual).avanzar(scanner, questions);
+            System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
+            System.out.print("Fin del turno del jugador: " + jugadores.get(jugadorActual).nickName+"\nPresione Enter para continuar");
+            scanner.nextLine();
+
             if (ganador) {
                 jugadores.get(jugadorActual).usuario.setVictory(jugadores.get(jugadorActual).usuario.getVictory()+1);
             }jugadorActual++;
@@ -213,7 +217,6 @@ public class TableTop {
                 throw new RuntimeException(e);
             }
             if (jugadorActual == jugadores.size()) jugadorActual = 0;
-            System.out.println("Posición actual:\n" + jugadores.get(jugadorActual).posicion.paint());
         }
         System.out.println("Jugador actual ganó la partida: " + jugadores.get(jugadorActual).nickName);
     }

@@ -1,6 +1,7 @@
 package TriviaUCAB.models;
 
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 /**
  * Clase que representa una casilla especial del tablero llamada "SquareRayo".
@@ -197,7 +198,20 @@ public class SquareRayo extends Square implements movimientoBidireccional, Categ
         }
 
         System.out.println("Pregunta: " + question.getQuestion());
-        boolean respuestaCorrecta = revisarRespuesta(scanner, question);
+        boolean respuestaCorrecta = false;
+        try (ScheduledExecutorService executorService = Executors
+                .newSingleThreadScheduledExecutor()) {
+
+            RevisarRespuesta revisor = new RevisarRespuesta(question);
+            Future<Boolean> future = null;
+            try {
+                future = executorService.submit(revisor);
+                respuestaCorrecta = future.get(questions.getTime(), TimeUnit.SECONDS);
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                future.cancel(true); // Cancelar la ejecución de la tarea
+                System.out.println("Se ha acabado el tiempo de responder la pregunta, presione enter para continuar. ");
+            }
+        }
 
         if (respuestaCorrecta) {
             System.out.println("¡Respuesta correcta!");

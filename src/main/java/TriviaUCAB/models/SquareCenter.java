@@ -1,6 +1,6 @@
 package TriviaUCAB.models;
 
-import java.util.Scanner;
+import java.util.Scanner;import java.util.concurrent.*;
 
 /**
  * Clase que representa la casilla central del tablero en el juego.
@@ -10,11 +10,12 @@ import java.util.Scanner;
  * Implementa las interfaces {@link brazo} y {@link CategoryQuestion}.
  */
 public class SquareCenter extends Square implements brazo, CategoryQuestion {
-
+    //cambiar cuantos brazos quiero que tenga
+    final int BRAZOS=6;
     /**
      * Arreglo que contiene los 6 brazos del tablero, cada uno compuesto por varias casillas de categoría.
      */
-    protected SquareCategory rayos[] = new SquareCategory[6];
+    protected SquareCategory rayos[] = new SquareCategory[BRAZOS];
 
     /**
      * Dibuja la casilla central en la consola.
@@ -70,7 +71,7 @@ public class SquareCenter extends Square implements brazo, CategoryQuestion {
      * @return Casilla destino después del movimiento.
      */
     public Square salir(int move, int exit, Ficha jugador, Scanner scanner) {
-        if (move < 1 || move > 6) {
+        if (move < 1 || move > BRAZOS) {
             throw new IllegalArgumentException("El movimiento debe estar entre 1 y 6");
         }
         SquareCategory ciclar = this.rayos[exit];
@@ -183,8 +184,20 @@ public class SquareCenter extends Square implements brazo, CategoryQuestion {
         }
 
         System.out.println("Pregunta: " + question.getQuestion());
-        boolean respuestaCorrecta = revisarRespuesta(scanner, question);
+        boolean respuestaCorrecta = false;
+        try (ScheduledExecutorService executorService = Executors
+                .newSingleThreadScheduledExecutor()) {
 
+            RevisarRespuesta revisor = new RevisarRespuesta(question);
+            Future<Boolean> future = null;
+            try {
+                future = executorService.submit(revisor);
+                respuestaCorrecta = future.get(questions.getTime(), TimeUnit.SECONDS);
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                future.cancel(true); // Cancelar la ejecución de la tarea
+                System.out.println("Se ha acabado el tiempo de responder la pregunta, presione enter para continuar. ");
+            }
+        }
         if (respuestaCorrecta) {
             System.out.println("¡Respuesta correcta!");
             jugador.gano = true;
@@ -194,6 +207,7 @@ public class SquareCenter extends Square implements brazo, CategoryQuestion {
             return this;
         }
     }
+
 
     /**
      * Reacción alternativa sin preguntas (por compatibilidad con la interfaz).

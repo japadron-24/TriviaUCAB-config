@@ -1,24 +1,23 @@
 package TriviaUCAB.models;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.concurrent.*;
-import java.util.Scanner;
 
 public class RevisarRespuesta implements Callable<Boolean> {
 Question question;
-Scanner scanner;
-
+BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     @Override
     public Boolean call() throws Exception {
         System.out.print("Ingrese su respuesta: ");
-        String respuesta = scanner.nextLine();
+        String respuesta = reader.readLine();
         return respuesta.equalsIgnoreCase(question.getAnswer()) ||
                 question.getAnswer().toLowerCase().contains(respuesta.toLowerCase()) ||
                 respuesta.toLowerCase().contains(question.getAnswer().toLowerCase());
     }
 
-    public RevisarRespuesta(Question question, Scanner scanner) {
+    public RevisarRespuesta(Question question) {
         this.question = question;
-        this.scanner = scanner;
     }
 
     public Question getQuestion() {
@@ -29,11 +28,4 @@ Scanner scanner;
         this.question = question;
     }
 
-    public Scanner getScanner() {
-        return scanner;
-    }
-
-    public void setScanner(Scanner scanner) {
-        this.scanner = scanner;
-    }
 }
